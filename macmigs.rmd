@@ -1,0 +1,265 @@
+---
+title: "MAC MIGS Summer Internship"
+author: "Idris Hedayat"
+date: '2022-07-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gtools")
+library(gtools)
+```
+# introduction
+
+
+#in the case of n=5
+here i am just testing code to see if i can reproduce the results found in Hoeffdings 1948 paper for the case of n=5, in doing so i can reuse functions created to adapt to a n=10 scenario for example.
+```{r cars}
+#in the case of n=10
+
+
+
+n5 <- 1:5
+
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+
+n5Xis <- rep.row(n5,factorial(5))
+
+
+#These are the Ri's , ranks of Yi's ;
+permsn5 <- permutations(v=n5,n=5,r=5)
+
+#test row from list of permutations
+Test1permsn5 <- permsn5[17,]
+Test1permsn5
+# [1] 1 4 5 2 3
+Test1permsn5[2]
+#4
+
+
+# finding A
+#ai + 1 = rank of Xi
+#( martix) A = summation 1 to n of ai(ai-1)bi(bi-1)
+n5ais <- n5Xis - 1
+
+#bi's
+n5bis <- permsn5 - 1
+
+
+
+#A  THIS FUNCTION CAN BE USED FOR ANY size n
+nAfunc <- function(a,b) {
+  c = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        c[i,j] = c[i,j] + (a[i,j]*(a[i,j]-1)*b[i,j]*(b[i,j]-1))
+    }
+  }
+  return(c)
+}
+
+ #matrix for the individual values in the summation of A
+N5Amat <- nAfunc(n5ais,n5bis) 
+
+#returned we have a vector with length 5! of all the A's
+n5As = rowSums(N5Amat) 
+n5As
+
+#finding ci's,  sum(perm[i] > perm[1:i])
+n5cifunc <- function(R) {
+  c = matrix(0,nrow=factorial(ncol(R)),ncol=ncol(R))
+  for(i in 1:nrow(R)) {
+    for(j in 1:ncol(R)) {
+        c[i,j] = c[i,j] + sum(R[i,j] > R[i,1:j])
+    }
+  }
+  return(c)
+}
+
+#matrix of ci values, each row representing each permutation of Yis
+n5cis <- n5cifunc(permsn5)
+
+#finding B
+
+nBfunc <- function(a,b,c) {
+  d = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        d[i,j] = d[i,j] + ((a[i,j]-1)*(b[i,j]-1)*c[i,j])
+    }
+  }
+  return(d)
+}
+
+n5Bmat <- nBfunc(n5ais,n5bis,n5cis)
+
+n5Bs <- rowSums(n5Bmat)
+
+n5Bs
+
+
+# finding C 
+
+nCfunc <- function(c) {
+  d = matrix(0,nrow=factorial(ncol(c)),ncol=ncol(c))
+  for(i in 1:nrow(c)) {
+    for(j in 1:ncol(c)) {
+        d[i,j] = d[i,j] + (c[i,j]*(c[i,j]-1))
+    }
+  }
+  return(d)
+}
+
+n5Cmat <- nCfunc(n5cis)
+n5Cmat
+
+n5Cs <- rowSums(n5Cmat)
+                
+n5Cs
+
+
+# finding Q
+# given our vectors for A,B,and C; n5As,n5Bs,n5Cs respectively; we can calculate Q as;
+#Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+nQfunc <- function(n,A,B,C) {
+  Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+  return(Q)
+}
+
+n5Qs = nQfunc(5,n5As,n5Bs,n5Cs)
+n5Qs
+Qfreqsn5 <- table(n5Qs)
+prop.table(Qfreqsn5)
+
+
+
+```
+
+
+
+#finding the permutation of vectors
+
+# for n = 10
+```{r cars}
+#in the case of n=10
+
+
+
+n10 <- c(1,2,3,4,5,6,7,8,9,10)
+
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+
+n10Xis <- rep.row(n10,factorial(10))
+  
+
+
+permsn10 <- permutations(v=n10,n=10,r=10)
+
+
+
+# finding A
+#ai + 1 = rank of Xi
+#( martix) A = summation 1 to n of ai(ai-1)bi(bi-1)
+n10ais <- n10Xis - 1
+
+#bi's
+n10bis <- permsn10 - 1
+
+
+
+#A  THIS FUNCTION CAN BE USED FOR ANY size n
+nAfunc <- function(a,b) {
+  c = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        c[i,j] = c[i,j] + (a[i,j]*(a[i,j]-1)*b[i,j]*(b[i,j]-1))
+    }
+  }
+  return(c)
+}
+
+ #matrix for the individual values in the summation of A
+N10Amat <- nAfunc(n10ais,n10bis) 
+
+#returned we have a vector with length 10! of all the A's
+n10As = rowSums(N10Amat) 
+n10As
+
+#finding ci's,  sum(perm[i] > perm[1:i])
+n10cifunc <- function(R) {
+  c = matrix(0,nrow=factorial(ncol(R)),ncol=ncol(R))
+  for(i in 1:nrow(R)) {
+    for(j in 1:ncol(R)) {
+        c[i,j] = c[i,j] + sum(R[i,j] > R[i,1:j])
+    }
+  }
+  return(c)
+}
+
+#matrix of ci values, each row representing each permutation of Yis
+n10cis <- n10cifunc(permsn10)
+
+#finding B
+
+nBfunc <- function(a,b,c) {
+  d = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        d[i,j] = d[i,j] + ((a[i,j]-1)*(b[i,j]-1)*c[i,j])
+    }
+  }
+  return(d)
+}
+
+n10Bmat <- nBfunc(n10ais,n10bis,n10cis)
+
+n10Bs <- rowSums(n10Bmat)
+
+n10Bs
+
+
+# finding C 
+
+nCfunc <- function(c) {
+  d = matrix(0,nrow=factorial(ncol(c)),ncol=ncol(c))
+  for(i in 1:nrow(c)) {
+    for(j in 1:ncol(c)) {
+        d[i,j] = d[i,j] + (c[i,j]*(c[i,j]-1))
+    }
+  }
+  return(d)
+}
+
+n10Cmat <- nCfunc(n10cis)
+n10Cmat
+
+n10Cs <- rowSums(n10Cmat)
+                
+n10Cs
+
+
+# finding Q
+# given our vectors for A,B,and C; n10As,n10Bs,n10Cs respectively; we can calculate Q as;
+#Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+nQfunc <- function(n,A,B,C) {
+  Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+  return(Q)
+}
+
+n10Qs = nQfunc(10,n10As,n10Bs,n10Cs)
+
+Qfreqsn10 <- table(n10Qs)
+comfreqsn10 <- prop.table(Qfreqsn10)
+comfreqsn10
+
+plot(comfreqsn10)
+
+```
+
+
+
