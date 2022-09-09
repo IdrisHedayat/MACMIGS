@@ -1,0 +1,217 @@
+---
+title: "Gaver Stehfest m=30"
+author: "Idris Hedayat"
+date: '2022-08-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gtools)
+library(dplyr)
+```
+
+In this latest update we do the Gaver Stehfest Estimation using the double sum truncated up to m=30, n from 5:15, and t from 1:20.
+
+``` {r 30aug updates 818am email}
+
+#now we will increase the number of terms in double sum to i,j = m = 30
+
+dsm30 = function(s){
+  {DSP1 = log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 4*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 4*log(s/32 + 1) + 4*log(s/50 + 1) + 2*log((2*s)/49 + 1) + 6*log(s/72 + 1) + 3*log((2*s)/81 + 1) + 4*log(s/98 + 1) + 2*log((2*s)/121 + 1) + 5*log(s/128 + 1) + 6*log(s/162 + 1) + 2*log((2*s)/169 + 1) + 6*log(s/200 + 1) + 4*log((2*s)/225 + 1) + 4*log(s/242 + 1) + 8*log(s/288 + 1) + 2*log((2*s)/289 + 1) + 4*log(s/338 + 1) + 2*log((2*s)/361 + 1) + 6*log(s/392 + 1) + 4*log((2*s)/441 + 1) + 8*log(s/450 + 1) + 4*log(s/512 + 1) + 2*log((2*s)/529 + 1) + 2*log(s/578 + 1) + 3*log((2*s)/625 + 1) + 7*log(s/648 + 1) + 2*log(s/722 + 1) + 4*log((2*s)/729 + 1) + 6*log(s/800 + 1) + 2*log((2*s)/841 + 1) + 6*log(s/882 + 1) + 4*log(s/968 + 1) + 2*log(s/1058 + 1) + 2*log((2*s)/1089 + 1) + 8*log(s/1152 + 1) + 2*log((2*s)/1225 + 1) + 4*log(s/1250 + 1) + 4*log(s/1352 + 1) + 6*log(s/1458 + 1) + 2*log((2*s)/1521 + 1) + 6*log(s/1568 + 1) + 2*log(s/1682 + 1) + 10*log(s/1800 + 1) + 4*log((2*s)/2025 + 1) + 3*log(s/2048 + 1) + 4*log(s/2178 + 1) + 2*log(s/2312 + 1) + log((2*s)/2401 + 1) + 4*log(s/2450 + 1) + 8*log(s/2592 + 1) + 2*log((2*s)/2601 + 1) + 2*log(s/2888 + 1) + 2*log((2*s)/3025 + 1) + 4*log(s/3042 + 1) + 6*log(s/3200 + 1) + 2*log((2*s)/3249 + 1) + 8*log(s/3528 + 1) + 4*log(s/3872 + 1) + 4*log((2*s)/3969 + 1) + 8*log(s/4050 + 1) + 2*log((2*s)/4225 + 1) + 2*log(s/4232 + 1) + 6*log(s/4608 + 1) + 2*log((2*s)/4761 + 1) + 2*log(s/4802 + 1) + 5*log(s/5000 + 1) + 2*log(s/5202 + 1) + 4*log(s/5408 + 1) + 4*log((2*s)/5625 + 1) + 6*log(s/5832 + 1) + 2*log((2*s)/5929 + 1)}
+  {DSP2 =  4*log(s/6050 + 1) + 6*log(s/6272 + 1) + 2*log(s/6498 + 1) + 3*log((2*s)/6561 + 1) + 2*log(s/6728 + 1) + 10*log(s/7200 + 1) + 2*log((2*s)/7225 + 1) + 2*log((2*s)/7569 + 1) + 6*log(s/7938 + 1) + 2*log(s/8192 + 1) + 2*log((2*s)/8281 + 1) + 4*log(s/8450 + 1) + 4*log(s/8712 + 1) + 2*log((2*s)/9025 + 1) + 2*log(s/9248 + 1) + 2*log(s/9522 + 1) + 6*log(s/9800 + 1) + 2*log((2*s)/9801 + 1) + 7*log(s/10368 + 1) + 4*log((2*s)/11025 + 1) + 6*log(s/11250 + 1) + 2*log(s/11552 + 1) + 4*log(s/11858 + 1) + 4*log(s/12168 + 1) + 4*log(s/12800 + 1) + 4*log(s/13122 + 1) + 2*log((2*s)/13225 + 1) + 2*log((2*s)/13689 + 1) + 8*log(s/14112 + 1) + 2*log((2*s)/14161 + 1) + 2*log(s/14450 + 1) + log((2*s)/14641 + 1) + 2*log(s/15138 + 1) + 4*log(s/15488 + 1) + 2*log((2*s)/15625 + 1) + 8*log(s/16200 + 1) + 4*log(s/16562 + 1) + 2*log(s/16928 + 1) + 2*log((2*s)/17689 + 1) + 2*log(s/18050 + 1) + 4*log((2*s)/18225 + 1) + 4*log(s/18432 + 1) + 3*log(s/19208 + 1) + 4*log(s/19602 + 1) + 4*log(s/20000 + 1) + 2*log((2*s)/20449 + 1) + 2*log(s/20808 + 1) + 2*log((2*s)/21025 + 1) + 2*log((2*s)/21609 + 1) + 4*log(s/21632 + 1) + 6*log(s/22050 + 1) + 6*log(s/23328 + 1) + 2*log((2*s)/23409 + 1) + 4*log(s/24200 + 1) + 4*log(s/25088 + 1) + 2*log((2*s)/25921 + 1) + 2*log(s/25992 + 1) + 2*log(s/26450 + 1) + 2*log(s/26912 + 1) + 2*log((2*s)/27225 + 1) + 4*log(s/27378 + 1) + 2*log(s/28322 + 1) + log((2*s)/28561 + 1) + 8*log(s/28800 + 1) + 2*log((2*s)/29241 + 1) + 2*log(s/29282 + 1) + 2*log((2*s)/30625 + 1) + 2*log(s/31250 + 1) + 6*log(s/31752 + 1) + log(s/32768 + 1) + 4*log(s/33800 + 1) + 4*log(s/34848 + 1)}
+  {DSP3 =  2*log((2*s)/34969 + 1) + 2*log(s/35378 + 1) + 4*log((2*s)/35721 + 1) + 6*log(s/36450 + 1) + 2*log(s/36992 + 1) + 2*log((2*s)/38025 + 1) + 2*log(s/38088 + 1) + 4*log(s/39200 + 1) + 4*log(s/40898 + 1) + 2*log((2*s)/41209 + 1) + 4*log(s/41472 + 1) + 2*log(s/42050 + 1) + 2*log((2*s)/42849 + 1) + 2*log(s/43218 + 1) + 2*log((2*s)/43681 + 1) + 6*log(s/45000 + 1) + 2*log(s/46208 + 1) + 2*log(s/46818 + 1) + 4*log(s/47432 + 1) + 4*log(s/48672 + 1) + 2*log((2*s)/48841 + 1) + 3*log((2*s)/50625 + 1) + 2*log(s/51200 + 1) + 2*log(s/51842 + 1) + 3*log(s/52488 + 1) + 2*log((2*s)/53361 + 1) + 4*log(s/54450 + 1) + 6*log(s/56448 + 1) + 2*log(s/57122 + 1) + 2*log(s/57800 + 1) + 2*log(s/58482 + 1) + 2*log((2*s)/59049 + 1) + 2*log(s/60552 + 1) + 2*log((2*s)/61009 + 1) + 2*log(s/61250 + 1) + 2*log(s/61952 + 1) + 2*log((2*s)/64009 + 1) + 6*log(s/64800 + 1) + 2*log((2*s)/65025 + 1) + 4*log(s/66248 + 1) + 2*log(s/67712 + 1) + 2*log((2*s)/68121 + 1) + 2*log(s/69938 + 1) + 4*log(s/71442 + 1) + 2*log(s/72200 + 1) + 2*log(s/73728 + 1) + 2*log((2*s)/74529 + 1) + 2*log((2*s)/75625 + 1) + 4*log(s/76050 + 1) + 2*log(s/76832 + 1) + 2*log(s/78408 + 1) + 3*log(s/80000 + 1) + 2*log((2*s)/81225 + 1) + 2*log(s/82418 + 1) + 2*log(s/83232 + 1) + log((2*s)/83521 + 1) + 2*log(s/85698 + 1) + 2*log(s/86528 + 1) + 2*log(s/87362 + 1) + 6*log(s/88200 + 1) + 2*log((2*s)/88209 + 1) + 2*log((2*s)/89401 + 1) + 4*log(s/93312 + 1) + 2*log(s/96800 + 1) + 2*log(s/97682 + 1) + 2*log((2*s)/99225 + 1) + 2*log(s/100352 + 1) + 4*log(s/101250 + 1) + 2*log((2*s)/101761 + 1) + 2*log(s/103968 + 1) + 2*log((2*s)/104329 + 1)}
+  {DSP4 =  2*log((2*s)/105625 + 1) + 2*log(s/105800 + 1) + 2*log(s/106722 + 1) + 2*log(s/107648 + 1) + 2*log(s/109512 + 1) + 2*log(s/113288 + 1) + 4*log(s/115200 + 1) + log(s/117128 + 1) + 2*log(s/118098 + 1) + 2*log((2*s)/119025 + 1) + 2*log(s/122018 + 1) + 2*log((2*s)/123201 + 1) + 2*log(s/125000 + 1) + 4*log(s/127008 + 1) + 2*log((2*s)/127449 + 1) + 2*log(s/128018 + 1) + 2*log(s/130050 + 1) + log((2*s)/130321 + 1) + 2*log(s/135200 + 1) + 2*log(s/136242 + 1) + 2*log(s/139392 + 1) + 2*log((2*s)/140625 + 1) + 2*log(s/141512 + 1) + 2*log((2*s)/142129 + 1) + 4*log(s/145800 + 1) + 2*log(s/149058 + 1) + 2*log(s/151250 + 1) + 2*log(s/152352 + 1) + 2*log((2*s)/152881 + 1) + 2*log(s/156800 + 1) + 2*log((2*s)/159201 + 1) + 2*log(s/162450 + 1) + 2*log(s/163592 + 1) + 2*log((2*s)/164025 + 1) + log(s/165888 + 1) + 2*log(s/168200 + 1) + 2*log(s/172872 + 1) + 2*log(s/176418 + 1) + 2*log(s/178802 + 1) + 4*log(s/180000 + 1) + 2*log((2*s)/180625 + 1) + 2*log((2*s)/189225 + 1) + 2*log(s/189728 + 1) + 2*log((2*s)/190969 + 1) + log((2*s)/194481 + 1) + 2*log(s/194688 + 1) + 2*log(s/198450 + 1) + 2*log(s/203522 + 1) + 2*log(s/207368 + 1) + 2*log(s/209952 + 1) + 2*log((2*s)/210681 + 1) + 2*log(s/211250 + 1) + 2*log(s/217800 + 1) + 2*log((2*s)/225625 + 1) + 2*log(s/225792 + 1) + log(s/228488 + 1) + 2*log((2*s)/233289 + 1) + 2*log(s/238050 + 1) + 2*log(s/242208 + 1) + 2*log((2*s)/243049 + 1) + 2*log(s/245000 + 1) + 2*log(s/246402 + 1) + 2*log(s/259200 + 1) + 2*log((2*s)/263169 + 1) + 2*log(s/264992 + 1) + 2*log((2*s)/275625 + 1) + log((2*s)/279841 + 1) + 2*log(s/281250 + 1) + 2*log(s/284258 + 1)}
+  {DSP5 =  2*log(s/285768 + 1) + 2*log((2*s)/303601 + 1) + 2*log(s/304200 + 1) + log(s/307328 + 1) + 2*log((2*s)/321489 + 1) + 2*log(s/328050 + 1) + 2*log(s/329672 + 1) + 2*log((2*s)/330625 + 1) + 2*log(s/352800 + 1) + 2*log((2*s)/370881 + 1) + 2*log(s/378450 + 1) + 2*log((2*s)/385641 + 1) + log((2*s)/390625 + 1) + log(s/405000 + 1) + 2*log((2*s)/444889 + 1) + 2*log((2*s)/455625 + 1) + 2*log((2*s)/525625 + 1) + log((2*s)/531441 + 1) + 2*log((2*s)/613089 + 1) + log((2*s)/707281 + 1)}
+      return(DSP1 + DSP2 + DSP3 + DSP4 + DSP5)                        
+}
+
+
+dsm30(5)
+
+#below is the code for DS(s) = double sum of….(truncation of j1, j2 after m terms) evaluated from s = 1:20
+
+dsm30list = dsm30(1:20)
+
+#below is the code for f(s) = exp(- 0.5 * double sum) = Laplace Transform for density
+
+FsHDm30 = function(s){
+  exp(-0.5 * dsm30(s))
+}
+
+
+fsm30list = FsHDm30(1:20)
+
+
+#below finds the F(s)= f(s)/s i.e. the laplace transform for DF
+
+Fsm30 = function(s){
+  FsHDm30(s)/s
+}
+
+Fsm30list = Fsm30(1:20)
+
+
+m30tab <- data.frame(dsm30list,fsm30list,Fsm30list)
+m30tab %>%
+  rename(
+    "DS(s) m=30" = dsm30list,
+    "f(s) m=30" = fsm30list,
+    "F(s) m=30" = Fsm30list,
+  )
+
+
+#code for ckn
+ckn <- function(n,k){
+  CKN = (-1)^(n+k) * (k^n / (factorial(k)*factorial(n-k)))
+  return(CKN)
+}
+
+
+#below is the code to find fkt in the gaver=stehfest method, evaluated using the double summation truncated at m=20
+HDfkt = function(k,t){
+  FKTp1 = (log(2)/t) 
+  FKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  FKTp3 = 0
+  for(i in 0:k){
+    fktp3summ = (choose(k,i))*((-1)^i)*(FsHDm30(((k+i)*log(2))/t))
+    FKTp3 = FKTp3 + fktp3summ
+  }
+ FKT = FKTp1 * FKTp2 * FKTp3
+ FKT
+}
+
+#below is the code that finds fnt in the gaver-stehfest method
+
+HDfnt <- function(n,t){
+  FNT = 0
+  mckn <- c()
+  mfhat <- c()
+  for(i in 1:n){
+    summ = ckn(n,i) * HDfkt(i,t)
+    FNT = FNT + summ
+  }
+  return(FNT)
+}
+
+ #this function creates a vector of fnt estimate evaluated at specifed n, for t from 1 to 20
+HDFntlist = function(n){
+FNTlist <- c()
+for (i in seq(1, 20)) {
+  new_value = HDfnt(n,i)
+  FNTlist <- c(FNTlist, new_value)
+  }
+  FNTlist
+}
+
+HDF5t <- HDFntlist(5)
+HDF6t <- HDFntlist(6)
+HDF7t <- HDFntlist(7)
+HDF8t <- HDFntlist(8)
+HDF9t <- HDFntlist(9)
+HDF10t <- HDFntlist(10)
+HDF11t <- HDFntlist(11)
+HDF12t <- HDFntlist(12)
+HDF13t <- HDFntlist(13)
+HDF14t <- HDFntlist(14)
+HDF15t <- HDFntlist(15)
+
+
+t<- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
+HDpdfgavertable <- data.frame(t,HDF5t,HDF6t,HDF7t,HDF8t,HDF9t,HDF10t,HDF11t,HDF12t,HDF13t, HDF14t,HDF15t)
+HDpdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; fn(t) for n=5" = HDF5t,
+    "Gaver-Stehfest Approx; fn(t) for n=6" = HDF6t,
+    "Gaver-Stehfest Approx; fn(t) for n=7" = HDF7t,
+    "Gaver-Stehfest Approx; fn(t) for n=8" = HDF8t,
+    "Gaver-Stehfest Approx; fn(t) for n=9" = HDF9t,
+    "Gaver-Stehfest Approx; fn(t) for n=10" = HDF10t,
+    "Gaver-Stehfest Approx; fn(t) for n=11" = HDF11t,
+    "Gaver-Stehfest Approx; fn(t) for n=12" = HDF12t,
+    "Gaver-Stehfest Approx; fn(t) for n=13" = HDF13t,
+    "Gaver-Stehfest Approx; fn(t) for n=14" = HDF14t,
+    "Gaver-Stehfest Approx; fn(t) for n=15" = HDF15t
+  )
+
+######################################################
+######################################################
+######################################################
+######################################################
+###### NOW for DF (LT divided by s)##################
+######################################################
+######################################################
+######################################################
+######################################################
+
+
+HDDFfkt = function(k,t) { 
+  DFFKTp1 = (log(2)/t) 
+  DFFKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  DFFKTp3 = 0
+  for(i in 0:k){
+    DFfktp3summ = (choose(k,i))*((-1)^i)* ((FsHDm30(((k+i)*log(2))/t))/  (((k+i)*log(2))/t))
+    DFFKTp3 = DFFKTp3 + DFfktp3summ
+  }
+ DFFKT = DFFKTp1 * DFFKTp2 * DFFKTp3
+ DFFKT
+}
+
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+HDDFfnt <- function(n,t){
+  HDDFFNT = 0
+  for(i in 1:n){
+    HDDFsumm = ckn(n,i) * HDDFfkt(i,t)
+    HDDFFNT = HDDFFNT + HDDFsumm
+  }
+  return(HDDFFNT)
+}
+
+
+
+
+HDDFFntlist = function(n){
+HDDFFNTlist <- c()
+for (i in seq(1,20)) {
+  DFnew_value = HDDFfnt(n,i)
+  HDDFFNTlist <- c(HDDFFNTlist, DFnew_value)
+  }
+  HDDFFNTlist
+}
+#above function repeats 
+HDDFF2t <- HDDFFntlist(2)
+
+
+HDDFF5t <- HDDFFntlist(5)
+HDDFF6t <- HDDFFntlist(6)
+HDDFF7t <- HDDFFntlist(7)
+HDDFF8t <- HDDFFntlist(8)
+HDDFF9t <- HDDFFntlist(9)
+HDDFF10t <- HDDFFntlist(10)
+HDDFF11t <- HDDFFntlist(11)
+HDDFF12t <- HDDFFntlist(12)
+HDDFF13t <- HDDFFntlist(13)
+HDDFF14t <- HDDFFntlist(14)
+HDDFF15t <- HDDFFntlist(15)
+
+HDdfgavertable <- data.frame(t,HDDFF5t,HDDFF6t,HDDFF7t,HDDFF8t,HDDFF9t,HDDFF10t,HDDFF11t,HDDFF12t,HDDFF13t,HDDFF14t,HDDFF15t)
+HDdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; DFn(t) for n=5" = HDDFF5t,
+    "Gaver-Stehfest Approx; DFn(t) for n=6" = HDDFF6t,
+    "Gaver-Stehfest Approx; DFn(t) for n=7" = HDDFF7t,
+    "Gaver-Stehfest Approx; DFn(t) for n=8" = HDDFF8t,
+    "Gaver-Stehfest Approx; DFn(t) for n=9" = HDDFF9t,
+    "Gaver-Stehfest Approx; DFn(t) for n=10" = HDDFF10t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=11" = HDDFF11t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=12" = HDDFF12t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=13" = HDDFF13t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=14" = HDDFF14t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=15" = HDDFF15t
+  )
+
+
+
+```

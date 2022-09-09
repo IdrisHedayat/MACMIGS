@@ -1,22 +1,39 @@
 ---
-title: "MAC MIGS Summer Internship"
+title: "A Study of Hoeffding's Test for non-parametric test for Independence"
 author: "Idris Hedayat"
 date: '2022-07-18'
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("gtools")
 library(gtools)
+library(dplyr)
 ```
+#list of topics to address
+- bivariate copula
+- 
+
+
 # introduction
 
+In his 1948 paper "A non-parametric test of independence" [1] Wassily Hoeffding developed the D-statistic that could be applied in a non-parametric test to identify dependence existing between two continuous random variables X and Y solely off the rank order of the observations of n samples of both X and Y together. Hoeffding's test is consistent under the assumption that the join distribution of f(x,y) remains absolutely continuous. Similar approaches to this test have been addressed by the likes of Blum, Kiefer, and Rosenblatt [2], however we will primarily be focused on the original version of Hoeffding's D-Statistic from his 1948 paper, focusing on extending tabulation of the exact distributionfor smaller finite n, the limiting distribution of asymptotically equivalent.
+
+# The D-Statistic
+Before Hoeffding various tests had already been proposed on the hypothesis for independence between two variables X and Y for random sample of size n, some referred to by Hoeffding as rank test; dependent only on the rank order of observations with in the sample. Such rank tests have been studied by the likes of Hotelling and Pabst [3] and Kendall [4], however we note from Hoeffding  that after modfiying the examples given in his 1948 paper [5] 'A class of statistics with asymptotically normal distribution' that the two mentioned tests were shown to be "asymptotically biased" with respect to the class of distribution functions having continuous joint and marginal probability proability densities expressed as;
+
+$$include formula from 546 [1] $$
+Hoeffding goes on to show that there does exist rank tests of independecnce that are consistent, thus asymptoically unbiased.
+
+As aforementioned 
+
+Histortically 
 
 #in the case of n=5
 here i am just testing code to see if i can reproduce the results found in Hoeffdings 1948 paper for the case of n=5, in doing so i can reuse functions created to adapt to a n=10 scenario for example.
-```{r cars}
-#in the case of n=10
+```{r in the case of n equals 5}
+#in the case of n=5
 
 
 
@@ -26,7 +43,7 @@ rep.row<-function(x,n){
    matrix(rep(x,each=n),nrow=n)
 }
 
-n5Xis <- rep.row(n5,factorial(5))
+n5Xis <- rep.row(n5,factorial(5)) # creates a matrix of row vectors (1,2,3,4,5) repeated 5! times, giving ranks of Xis, or 'i'
 
 
 #These are the Ri's , ranks of Yi's ;
@@ -50,7 +67,7 @@ n5bis <- permsn5 - 1
 
 
 
-#A  THIS FUNCTION CAN BE USED FOR ANY size n
+# big A computation THIS FUNCTION CAN BE USED FOR ANY size n
 nAfunc <- function(a,b) {
   c = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
   for(i in 1:nrow(a)) {
@@ -68,8 +85,8 @@ N5Amat <- nAfunc(n5ais,n5bis)
 n5As = rowSums(N5Amat) 
 n5As
 
-#finding ci's,  sum(perm[i] > perm[1:i])
-n5cifunc <- function(R) {
+#finding ci's, using idea of sum(perm[i] > perm[1:i])
+ncifunc <- function(R) {
   c = matrix(0,nrow=factorial(ncol(R)),ncol=ncol(R))
   for(i in 1:nrow(R)) {
     for(j in 1:ncol(R)) {
@@ -80,7 +97,7 @@ n5cifunc <- function(R) {
 }
 
 #matrix of ci values, each row representing each permutation of Yis
-n5cis <- n5cifunc(permsn5)
+n5cis <- ncifunc(permsn5)
 
 #finding B
 
@@ -96,6 +113,7 @@ nBfunc <- function(a,b,c) {
 
 n5Bmat <- nBfunc(n5ais,n5bis,n5cis)
 
+#B vector
 n5Bs <- rowSums(n5Bmat)
 
 n5Bs
@@ -116,6 +134,8 @@ nCfunc <- function(c) {
 n5Cmat <- nCfunc(n5cis)
 n5Cmat
 
+#C vector
+
 n5Cs <- rowSums(n5Cmat)
                 
 n5Cs
@@ -133,17 +153,145 @@ n5Qs = nQfunc(5,n5As,n5Bs,n5Cs)
 n5Qs
 Qfreqsn5 <- table(n5Qs)
 prop.table(Qfreqsn5)
-
+plot(Qfreqsn5)
 
 
 ```
 
+# case for n 7
 
+```{r n7, echo=FALSE}
+#in the case of n=7
+
+
+
+n7 <- 1:7
+
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+
+n7Xis <- rep.row(n7,factorial(7)) # creates a matrix of row vectors (1,2,3,4,7) repeated 7! times, giving ranks of Xis, or 'i'
+
+
+#These are the Ri's , ranks of Yi's ;
+permsn7 <- permutations(v=n7,n=7,r=7)
+
+#test row from list of permutations
+Test1permsn7 <- permsn7[17,]
+Test1permsn7
+# [1] 1 4 7 2 3
+Test1permsn7[2]
+#4
+
+
+# finding A
+#ai + 1 = rank of Xi
+#( martix) A = summation 1 to n of ai(ai-1)bi(bi-1)
+n7ais <- n7Xis - 1
+
+#bi's
+n7bis <- permsn7 - 1
+
+
+
+# big A computation THIS FUNCTION CAN BE USED FOR ANY size n
+nAfunc <- function(a,b) {
+  c = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        c[i,j] = c[i,j] + (a[i,j]*(a[i,j]-1)*b[i,j]*(b[i,j]-1))
+    }
+  }
+  return(c)
+}
+
+ #matrix for the individual values in the summation of A
+N7Amat <- nAfunc(n7ais,n7bis) 
+
+#returned we have a vector with length 7! of all the A's
+n7As = rowSums(N7Amat) 
+n7As
+
+#finding ci's, using idea of sum(perm[i] > perm[1:i])
+ncifunc <- function(R) {
+  c = matrix(0,nrow=factorial(ncol(R)),ncol=ncol(R))
+  for(i in 1:nrow(R)) {
+    for(j in 1:ncol(R)) {
+        c[i,j] = c[i,j] + sum(R[i,j] > R[i,1:j])
+    }
+  }
+  return(c)
+}
+
+#matrix of ci values, each row representing each permutation of Yis
+n7cis <- ncifunc(permsn7)
+
+#finding B
+
+nBfunc <- function(a,b,c) {
+  d = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
+  for(i in 1:nrow(a)) {
+    for(j in 1:ncol(a)) {
+        d[i,j] = d[i,j] + ((a[i,j]-1)*(b[i,j]-1)*c[i,j])
+    }
+  }
+  return(d)
+}
+
+n7Bmat <- nBfunc(n7ais,n7bis,n7cis)
+
+#B vector
+n7Bs <- rowSums(n7Bmat)
+
+n7Bs
+
+
+# finding C 
+
+nCfunc <- function(c) {
+  d = matrix(0,nrow=factorial(ncol(c)),ncol=ncol(c))
+  for(i in 1:nrow(c)) {
+    for(j in 1:ncol(c)) {
+        d[i,j] = d[i,j] + (c[i,j]*(c[i,j]-1))
+    }
+  }
+  return(d)
+}
+
+n7Cmat <- nCfunc(n7cis)
+n7Cmat
+
+#C vector
+
+n7Cs <- rowSums(n7Cmat)
+                
+n7Cs
+
+
+# finding Q
+# given our vectors for A,B,and C; n7As,n7Bs,n7Cs respectively; we can calculate Q as;
+#Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+nQfunc <- function(n,A,B,C) {
+  Q = A-2*(n-2)*B+(n-2)*(n-3)*C
+  return(Q)
+}
+
+n7Qs = nQfunc(7,n7As,n7Bs,n7Cs)
+n7Qs
+Qfreqsn7 <- table(n7Qs)
+prop.table(Qfreqsn7)
+
+
+
+
+```
+thus it works for n=7 as well
 
 #finding the permutation of vectors
 
 # for n = 10
-```{r cars}
+```{r case for n 10, eval=FALSE, include=FALSE}
 #in the case of n=10
 
 
@@ -172,17 +320,6 @@ n10bis <- permsn10 - 1
 
 
 
-#A  THIS FUNCTION CAN BE USED FOR ANY size n
-nAfunc <- function(a,b) {
-  c = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
-  for(i in 1:nrow(a)) {
-    for(j in 1:ncol(a)) {
-        c[i,j] = c[i,j] + (a[i,j]*(a[i,j]-1)*b[i,j]*(b[i,j]-1))
-    }
-  }
-  return(c)
-}
-
  #matrix for the individual values in the summation of A
 N10Amat <- nAfunc(n10ais,n10bis) 
 
@@ -190,31 +327,11 @@ N10Amat <- nAfunc(n10ais,n10bis)
 n10As = rowSums(N10Amat) 
 n10As
 
-#finding ci's,  sum(perm[i] > perm[1:i])
-n10cifunc <- function(R) {
-  c = matrix(0,nrow=factorial(ncol(R)),ncol=ncol(R))
-  for(i in 1:nrow(R)) {
-    for(j in 1:ncol(R)) {
-        c[i,j] = c[i,j] + sum(R[i,j] > R[i,1:j])
-    }
-  }
-  return(c)
-}
 
 #matrix of ci values, each row representing each permutation of Yis
-n10cis <- n10cifunc(permsn10)
+n10cis <- ncifunc(permsn10)
 
-#finding B
 
-nBfunc <- function(a,b,c) {
-  d = matrix(0,nrow=factorial(ncol(a)),ncol=ncol(a))
-  for(i in 1:nrow(a)) {
-    for(j in 1:ncol(a)) {
-        d[i,j] = d[i,j] + ((a[i,j]-1)*(b[i,j]-1)*c[i,j])
-    }
-  }
-  return(d)
-}
 
 n10Bmat <- nBfunc(n10ais,n10bis,n10cis)
 
@@ -223,17 +340,6 @@ n10Bs <- rowSums(n10Bmat)
 n10Bs
 
 
-# finding C 
-
-nCfunc <- function(c) {
-  d = matrix(0,nrow=factorial(ncol(c)),ncol=ncol(c))
-  for(i in 1:nrow(c)) {
-    for(j in 1:ncol(c)) {
-        d[i,j] = d[i,j] + (c[i,j]*(c[i,j]-1))
-    }
-  }
-  return(d)
-}
 
 n10Cmat <- nCfunc(n10cis)
 n10Cmat
@@ -244,22 +350,1094 @@ n10Cs
 
 
 # finding Q
-# given our vectors for A,B,and C; n10As,n10Bs,n10Cs respectively; we can calculate Q as;
-#Q = A-2*(n-2)*B+(n-2)*(n-3)*C
-nQfunc <- function(n,A,B,C) {
-  Q = A-2*(n-2)*B+(n-2)*(n-3)*C
-  return(Q)
-}
+
 
 n10Qs = nQfunc(10,n10As,n10Bs,n10Cs)
 
 Qfreqsn10 <- table(n10Qs)
 comfreqsn10 <- prop.table(Qfreqsn10)
-comfreqsn10
+comfreqsn10 
+write.csv(comfreqsn10, "/Users/idrishedayat/Documents/MAC MIGS Summer Internship 2022/MACMIGS",row.names = FALSE)
 
 plot(comfreqsn10)
+
+```
+#case for n=11
+```{undefined eval=FALSE, include=FALSE}
+
+n11 <- c(1,2,3,4,5,6,7,8,9,10,11)
+
+n11Xis <- rep.row(n11,factorial(11))
+
+
+permsn11 <- permutations(v=n11,n=11,r=11)
+
+
+
+n11ais <- n11Xis - 1
+
+
+n11bis <- permsn11 - 1
+
+
+ #matrix for the individual values in the summation of A
+N11Amat <- nAfunc(n11ais,n11bis) 
+
+#returned we have a vector with length 11! of all the A's
+n11As = rowSums(N11Amat) 
+n11As
+
+
+n11cis <- ncifunc(permsn11)
+
+
+n11Bmat <- nBfunc(n11ais,n11bis,n11cis)
+
+n11Bs <- rowSums(n11Bmat)
+
+n11Bs
+
+
+n11Cmat <- nCfunc(n11cis)
+n11Cmat
+
+n11Cs <- rowSums(n11Cmat)
+                
+n11Cs
+
+
+n11Qs = nQfunc(11,n11As,n11Bs,n11Cs)
+
+Qfreqsn11 <- table(n11Qs)
+comfreqsn11 <- prop.table(Qfreqsn11)
+comfreqsn11
+
+plot(comfreqsn11)
+```
+
+#case for n=12
+```{r n12, eval=FALSE, include=FALSE}
+
+## We cant do n=12 directly using the code above so we have to split the data into smaller vectors first
+n12 =  c(1.2,3,4,5,6,7,8,9,10,11,12)
+n12Xis <- rep.row(n12,factorial(12))
+
+n12ais <- n12Xis - 1  ### so for n=12 the vectors will be  (0 1 2 3 4 5 6 7 8 9 10 11 12)
+
+
+
+
+
+n12p1 <- c(2,3,4,5,6,7,8,9,10,11,12)  
+#this vector ignores 1 as the first digit, i.e. finds all permutations so that we can eventually calculate the freqs for vectors (1 * * * * * * * * * * * )
+permsn12p1 <- permutations(v=n12p1,n=12,r=12)
+n12bisp1 <- permsn12p1 - 1
+n12aisp1 <- 
+
+#matrix for the individual values in the summation of A
+N12Amat <- nAfunc(n12ais,n12bis) 
+
+#returned we have a vector with length 12! of all the A's
+n12As = rowSums(N12Amat) 
+n12As
+
+
+n12cis <- ncifunc(permsn12)
+
+
+n12Bmat <- nBfunc(n12ais,n12bis,n12cis)
+
+n12Bs <- rowSums(n12Bmat)
+
+n12Bs
+
+
+n12Cmat <- nCfunc(n12cis)
+n12Cmat
+
+n12Cs <- rowSums(n12Cmat)
+                
+n12Cs
+
+#####
+#start p2
+###
+
+
+n12p1 <- c(7,8,9,10,11,12)
+
+n12Xis <- rep.row(n12,factorial(12))
+
+
+permsn12 <- permutations(v=n12,n=12,r=12)
+
+
+
+n12ais <- n12Xis - 1
+
+
+n12bis <- permsn12 - 1
+
+
+ #matrix for the individual values in the summation of A
+N12Amat <- nAfunc(n12ais,n12bis) 
+
+#returned we have a vector with length 12! of all the A's
+n12As = rowSums(N12Amat) 
+n12As
+
+
+n12cis <- ncifunc(permsn12)
+
+
+n12Bmat <- nBfunc(n12ais,n12bis,n12cis)
+
+n12Bs <- rowSums(n12Bmat)
+
+n12Bs
+
+
+n12Cmat <- nCfunc(n12cis)
+n12Cmat
+
+n12Cs <- rowSums(n12Cmat)
+                
+n12Cs
+
+### end part 2
+n12Qs = nQfunc(12,n12As,n12Bs,n12Cs)
+
+Qfreqsn12 <- table(n12Qs)
+comfreqsn12 <- prop.table(Qfreqsn12)
+comfreqsn12
+
+plot(comfreqsn12)
+```
+
+
+``` {r Gaver-Stehfest formulae testing with exponential dist PDF}
+
+# ft = exp^-t
+# Fs = #Laplace Transform of f(T) = 1/(1+S) (S>0)
+
+
+#chosen n = 5
+ckn <- function(n,k){
+  CKN = (-1)^(n+k) * (k^n / (factorial(k)*factorial(n-k)))
+  return(CKN)
+}
+
+
+#e.g. c n=2,k=1
+c21 = ckn(2,1)
+c21
+
+#above checks out
+
+#code testing third part of fhatkt function below
+# fhattest1 <- function(k,i,t){
+#   (choose(k,i))*((-1)^i)*(1/(1+((k+i)*log(2))/t))
+# }
+# fhattest1(1,1,0.1)
+# choose(1,1) *((-1)^1) * (1/(1+(1+1)))
+
+
+fhatkt = function(k,t) { 
+  FKTp1 = (log(2)/t) 
+  FKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  FKTp3 = 0
+  for(i in 0:k){
+    fktp3summ = (choose(k,i))*((-1)^i)*(1/(1+((k+i)*log(2))/t))
+    FKTp3 = FKTp3 + fktp3summ
+  }
+ FKT = FKTp1 * FKTp2 * FKTp3
+ FKT
+}
+fhatkt(2,0.1)
+#above checks out
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+fnt <- function(n,t){
+  FNT = 0
+  mckn <- c()
+  mfhat <- c()
+  for(i in 1:n){
+    summ = ckn(n,i) * fhatkt(i,t)
+    FNT = FNT + summ
+  }
+  return(FNT)
+}
+
+fnttest <- fnt(2,0.1)
+fnttest
+
+#above checks out
+
+
+Fntlist = function(n){
+FNTlist <- c()
+for (i in seq(0.1, 3, by = 0.1)) {
+  new_value = fnt(n,i)
+  FNTlist <- c(FNTlist, new_value)
+  }
+  FNTlist
+}
+#above function repeats 
+F2t <- Fntlist(2)
+
+
+F5t <- Fntlist(5)
+F6t <- Fntlist(6)
+F7t <- Fntlist(7)
+F8t <- Fntlist(8)
+F9t <- Fntlist(9)
+F10t <- Fntlist(10)
+
+
+
+t <- seq(0.1, 3, by = 0.1)
+t
+
+ft <- c()
+for (i in seq(0.1, 3, by = 0.1)) {
+ ft <- c(ft, exp(-i)) 
+}
+ft
+
+pdfgavertable <- data.frame(t,ft,F5t,F6t,F7t,F8t,F9t,F10t)
+pdfgavertable
+
+
+```
+
+``` {r Gaver-Stehfest exponential dist CDF}
+
+CDFfhatkt = function(k,t) { 
+  CDFFKTp1 = (log(2)/t) 
+  CDFFKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  CDFFKTp3 = 0
+  for(i in 0:k){
+    CDFfktp3summ = (choose(k,i))*((-1)^i)*(1/((((k+i)*log(2))/t)*(1+((k+i)*log(2))/t)))
+    CDFFKTp3 = CDFFKTp3 + CDFfktp3summ
+  }
+ CDFFKT = CDFFKTp1 * CDFFKTp2 * CDFFKTp3
+ CDFFKT
+}
+CDFfhatkt(2,0.1)
+#above checks out
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+CDFfnt <- function(n,t){
+  CDFFNT = 0
+  for(i in 1:n){
+    CDFsumm = ckn(n,i) * CDFfhatkt(i,t)
+    CDFFNT = CDFFNT + CDFsumm
+  }
+  return(CDFFNT)
+}
+
+CDFfnttest <- CDFfnt(2,0.1)
+CDFfnttest
+
+#above checks out
+
+
+CDFFntlist = function(n){
+CDFFNTlist <- c()
+for (i in seq(0.1, 3, by = 0.1)) {
+  CDFnew_value = CDFfnt(n,i)
+  CDFFNTlist <- c(CDFFNTlist, CDFnew_value)
+  }
+  CDFFNTlist
+}
+#above function repeats 
+CDFF2t <- CDFFntlist(2)
+
+
+CDFF5t <- CDFFntlist(5)
+CDFF6t <- CDFFntlist(6)
+CDFF7t <- CDFFntlist(7)
+CDFF8t <- CDFFntlist(8)
+CDFF9t <- CDFFntlist(9)
+CDFF10t <- CDFFntlist(10)
+CDFF5t
+
+
+cdf <- c()
+for (i in seq(0.1, 3, by = 0.1)) {
+ cdf <- c(cdf, (1-exp(-i))) 
+}
+cdf
+
+1-exp(-0.1)
+
+pdfgavertable <- data.frame(t,cdf,CDFF5t,CDFF6t,CDFF7t,CDFF8t,CDFF9t,CDFF10t)
+pdfgavertable
+
+
+```
+
+
+```{r gaver-stehfast for hoeffding D stat}
+#double sum of sigma j sigma k ln(1+ 2z/j^2 * k^2) truncated to m=5,10,20
+
+#I.e. DS(s)
+
+#For the functions below I have pasted the results from the for loop we talked about, which was done on matlab and transferred to R, these functions will evaluate the double summation truncated at specfied s. The reason i have done it like this is because R doesnt allow for symbolic algebra.
+
+
+#double sum for m=5
+
+dsm5 <- function(s){
+  log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 2*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 2*log(s/32 + 1) + 2*log(s/50 + 1) + 2*log(s/72 + 1) + log((2*s)/81 + 1) + log(s/128 + 1) + 2*log(s/200 + 1) + 2*log((2*s)/225 + 1) + log((2*s)/625 + 1)
+}
+
+#double sum for m=10
+
+dsm10 <- function(s){
+  log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 4*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 4*log(s/32 + 1) + 4*log(s/50 + 1) + 2*log((2*s)/49 + 1) + 4*log(s/72 + 1) + 3*log((2*s)/81 + 1) + 2*log(s/98 + 1) + 3*log(s/128 + 1) + 4*log(s/162 + 1) + 4*log(s/200 + 1) + 2*log((2*s)/225 + 1) + 4*log(s/288 + 1) + 2*log(s/392 + 1) + 2*log((2*s)/441 + 1) + 4*log(s/450 + 1) + 2*log(s/512 + 1) + log((2*s)/625 + 1) + 3*log(s/648 + 1) + 2*log((2*s)/729 + 1) + 4*log(s/800 + 1) + 2*log(s/882 + 1) + 2*log(s/1152 + 1) + 2*log((2*s)/1225 + 1) + 2*log(s/1250 + 1) + 2*log(s/1458 + 1) + 2*log(s/1568 + 1) + 2*log(s/1800 + 1) + 2*log((2*s)/2025 + 1) + log(s/2048 + 1) + log((2*s)/2401 + 1) + 2*log(s/2450 + 1) + 2*log(s/2592 + 1) + 2*log(s/3200 + 1) + 2*log((2*s)/3969 + 1) + 2*log(s/4050 + 1) + log(s/5000 + 1) + log((2*s)/6561 + 1)
+}
+
+
+#double sumfor m=20, I had to split it into 2 parts because R wouldnt allow for a sum with as many terms
+
+dsm20 = function(s){
+  {dsmP1 = log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 4*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 4*log(s/32 + 1) + 4*log(s/50 + 1) + 2*log((2*s)/49 + 1) + 6*log(s/72 + 1) + 3*log((2*s)/81 + 1) + 4*log(s/98 + 1) + 2*log((2*s)/121 + 1) + 5*log(s/128 + 1) + 6*log(s/162 + 1) + 2*log((2*s)/169 + 1) + 6*log(s/200 + 1) + 4*log((2*s)/225 + 1) + 2*log(s/242 + 1) + 6*log(s/288 + 1) + 2*log((2*s)/289 + 1) + 2*log(s/338 + 1) + 2*log((2*s)/361 + 1) + 4*log(s/392 + 1) + 2*log((2*s)/441 + 1) + 6*log(s/450 + 1) + 4*log(s/512 + 1) + 2*log(s/578 + 1) + log((2*s)/625 + 1) + 7*log(s/648 + 1) + 2*log(s/722 + 1) + 2*log((2*s)/729 + 1) + 6*log(s/800 + 1) + 4*log(s/882 + 1) + 2*log(s/968 + 1) + 2*log((2*s)/1089 + 1) + 6*log(s/1152 + 1) + 2*log((2*s)/1225 + 1) + 2*log(s/1250 + 1) + 2*log(s/1352 + 1) + 4*log(s/1458 + 1) + 2*log((2*s)/1521 + 1) + 4*log(s/1568 + 1) + 8*log(s/1800 + 1) + 4*log((2*s)/2025 + 1) + 3*log(s/2048 + 1) + 2*log(s/2178 + 1) + 2*log(s/2312 + 1) + log((2*s)/2401 + 1) + 4*log(s/2450 + 1) + 6*log(s/2592 + 1) + 2*log((2*s)/2601 + 1) + 2*log(s/2888 + 1) + 2*log((2*s)/3025 + 1) + 2*log(s/3042 + 1) + 6*log(s/3200 + 1) + 2*log((2*s)/3249 + 1) + 4*log(s/3528 + 1) + 2*log(s/3872 + 1) + 2*log((2*s)/3969 + 1) + 6*log(s/4050 + 1) + 2*log((2*s)/4225 + 1) + 4*log(s/4608 + 1) + 2*log(s/4802 + 1) + 3*log(s/5000 + 1) + 2*log(s/5202 + 1) + 2*log(s/5408 + 1) + 2*log((2*s)/5625 + 1) + 4*log(s/5832 + 1) + 2*log((2*s)/5929 + 1) + 2*log(s/6050 + 1) + 4*log(s/6272 + 1) + 2*log(s/6498 + 1) + log((2*s)/6561 + 1) + 6*log(s/7200 + 1) + 2*log((2*s)/7225 + 1) + 4*log(s/7938 + 1) + 2*log(s/8192 + 1) + 2*log((2*s)/8281 + 1) + 2*log(s/8450 + 1) + 2*log(s/8712 + 1) + 2*log((2*s)/9025 + 1) + 2*log(s/9248 + 1) + 4*log(s/9800 + 1) + 2*log((2*s)/9801 + 1) + 5*log(s/10368 + 1) + 2*log((2*s)/11025 + 1) + 2*log(s/11250 + 1) + 2*log(s/11552 + 1) + 2*log(s/11858 + 1) + 2*log(s/12168 + 1) + 4*log(s/12800 + 1) + 2*log(s/13122 + 1) + 2*log((2*s)/13689 + 1) + 2*log(s/14112 + 1) + 2*log((2*s)/14161 + 1) + 2*log(s/14450 + 1) + log((2*s)/14641 + 1) + 2*log(s/15488 + 1) + 6*log(s/16200 + 1) + 2*log(s/16562 + 1) + 2*log((2*s)/17689 + 1) + 2*log(s/18050 + 1) + 2*log((2*s)/18225 + 1) + 2*log(s/18432 + 1) + log(s/19208 + 1) + 2*log(s/19602 + 1) + 2*log(s/20000 + 1) + 2*log((2*s)/20449 + 1) + 2*log(s/20808 + 1) + 2*log(s/21632 + 1) + 2*log(s/22050 + 1) + 2*log(s/23328 + 1) + 2*log((2*s)/23409 + 1) + 2*log(s/24200 + 1) + 2*log(s/25088 + 1) + 2*log(s/25992 + 1) + 2*log((2*s)/27225 + 1) + 2*log(s/27378 + 1) + 2*log(s/28322 + 1) + log((2*s)/28561 + 1) + 4*log(s/28800 + 1) }
+ 
+  { dsmP2 = 2*log((2*s)/29241 + 1) + 2*log(s/31752 + 1) + log(s/32768 + 1) + 2*log(s/33800 + 1) + 2*log((2*s)/34969 + 1) + 2*log(s/35378 + 1) + 2*log(s/36450 + 1) + 2*log(s/36992 + 1) + 2*log((2*s)/38025 + 1) + 2*log(s/39200 + 1) + 2*log(s/41472 + 1) + 2*log((2*s)/43681 + 1) + 2*log(s/45000 + 1) + 2*log(s/46208 + 1) + 2*log(s/46818 + 1) + 2*log((2*s)/48841 + 1) + log((2*s)/50625 + 1) + 2*log(s/51200 + 1) + log(s/52488 + 1) + 2*log(s/57800 + 1) + 2*log(s/58482 + 1) + 2*log((2*s)/61009 + 1) + 2*log(s/64800 + 1) + 2*log((2*s)/65025 + 1) + 2*log(s/72200 + 1) + log(s/80000 + 1) + 2*log((2*s)/81225 + 1) + log((2*s)/83521 + 1) + 2*log((2*s)/104329 + 1) + log((2*s)/130321 + 1)}
+  
+  return(dsmP1+dsmP2)
+}
+
+#Below is f(s) for hoeffding D evaluated at given s, ie the Laplace trasnform for density, at m=5,10,20
+
+FsHDm5 = function(s){
+  exp(-0.5 * dsm5(s))
+}
+
+FsHDm10 = function(s){
+  exp(-0.5 * dsm10(s))
+}
+
+FsHDm20 = function(s){
+  exp(-0.5 * dsm20(s))
+}
+
+
+
+#code for ckn
+ckn <- function(n,k){
+  CKN = (-1)^(n+k) * (k^n / (factorial(k)*factorial(n-k)))
+  return(CKN)
+}
+
+
+#below is the code to find fkt in the gaver=stehfest method, evaluated using the double summation truncated at m=20
+HDfkt = function(k,t){
+  FKTp1 = (log(2)/t) 
+  FKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  FKTp3 = 0
+  for(i in 0:k){
+    fktp3summ = (choose(k,i))*((-1)^i)*(FsHDm20(((k+i)*log(2))/t))
+    FKTp3 = FKTp3 + fktp3summ
+  }
+ FKT = FKTp1 * FKTp2 * FKTp3
+ FKT
+}
+
+#below is the code that finds fnt in the gaver-stehfest method
+
+HDfnt <- function(n,t){
+  FNT = 0
+  mckn <- c()
+  mfhat <- c()
+  for(i in 1:n){
+    summ = ckn(n,i) * HDfkt(i,t)
+    FNT = FNT + summ
+  }
+  return(FNT)
+}
+
+ #this function creates a vector of fnt estimate evaluated at specifed n, for t from 1 to 10
+HDFntlist = function(n){
+FNTlist <- c()
+for (i in seq(1, 10)) {
+  new_value = HDfnt(n,i)
+  FNTlist <- c(FNTlist, new_value)
+  }
+  FNTlist
+}
+
+HDF5t <- HDFntlist(5)
+HDF6t <- HDFntlist(6)
+HDF7t <- HDFntlist(7)
+HDF8t <- HDFntlist(8)
+HDF9t <- HDFntlist(9)
+HDF10t <- HDFntlist(10)
+
+t<- c(1,2,3,4,5,6,7,8,9,10)
+HDpdfgavertable <- data.frame(t,HDF5t,HDF6t,HDF7t,HDF8t,HDF9t,HDF10t)
+HDpdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; fn(t) for n=5" = HDF5t,
+    "Gaver-Stehfest Approx; fn(t) for n=6" = HDF6t,
+    "Gaver-Stehfest Approx; fn(t) for n=7" = HDF7t,
+    "Gaver-Stehfest Approx; fn(t) for n=8" = HDF8t,
+    "Gaver-Stehfest Approx; fn(t) for n=9" = HDF9t,
+    "Gaver-Stehfest Approx; fn(t) for n=10" = HDF10t
+  )
+
+######################################################
+######################################################
+######################################################
+######################################################
+###### NOW for DF (LT divided by s)##################
+######################################################
+######################################################
+######################################################
+######################################################
+HDDFfkt = function(k,t) { 
+  DFFKTp1 = (log(2)/t) 
+  DFFKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  DFFKTp3 = 0
+  for(i in 0:k){
+    DFfktp3summ = (choose(k,i))*((-1)^i)* ((FsHDm20(((k+i)*log(2))/t))/  (((k+i)*log(2))/t))
+    DFFKTp3 = DFFKTp3 + DFfktp3summ
+  }
+ DFFKT = DFFKTp1 * DFFKTp2 * DFFKTp3
+ DFFKT
+}
+HDDFfkt(2,0.1)
+#above checks out
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+HDDFfnt <- function(n,t){
+  HDDFFNT = 0
+  for(i in 1:n){
+    HDDFsumm = ckn(n,i) * HDDFfkt(i,t)
+    HDDFFNT = HDDFFNT + HDDFsumm
+  }
+  return(HDDFFNT)
+}
+
+
+
+
+HDDFFntlist = function(n){
+HDDFFNTlist <- c()
+for (i in seq(1,10)) {
+  DFnew_value = HDDFfnt(n,i)
+  HDDFFNTlist <- c(HDDFFNTlist, DFnew_value)
+  }
+  HDDFFNTlist
+}
+#above function repeats 
+HDDFF2t <- HDDFFntlist(2)
+
+
+HDDFF5t <- HDDFFntlist(5)
+HDDFF6t <- HDDFFntlist(6)
+HDDFF7t <- HDDFFntlist(7)
+HDDFF8t <- HDDFFntlist(8)
+HDDFF9t <- HDDFFntlist(9)
+HDDFF10t <- HDDFFntlist(10)
+HDDFF5t
+
+HDdfgavertable <- data.frame(t,HDDFF5t,HDDFF6t,HDDFF7t,HDDFF8t,HDDFF9t,HDDFF10t)
+HDdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; DFn(t) for n=5" = HDDFF5t,
+    "Gaver-Stehfest Approx; DFn(t) for n=6" = HDDFF6t,
+    "Gaver-Stehfest Approx; DFn(t) for n=7" = HDDFF7t,
+    "Gaver-Stehfest Approx; DFn(t) for n=8" = HDDFF8t,
+    "Gaver-Stehfest Approx; DFn(t) for n=9" = HDDFF9t,
+    "Gaver-Stehfest Approx; DFn(t) for n=10" = HDDFF10t
+  )
+
+
+
+
+```
+Now below is where the tabulation for DS(s) = double sum of….(truncation of j1, j2 after m terms)
+f(s) = exp(- 0.5 * double sum) = Laplace Transform for density
+F(s)= f(s)/s = Laplace Transform for DF
+
+
+``` {r tabulation for william refer 1219pm email}
+#below is the code for DS(s) = double sum of….(truncation of j1, j2 after m terms)
+
+dsm5list = dsm5(1:10)
+dsm10list = dsm10(1:10)
+dsm20list = dsm20(1:10)
+
+#below is the code for f(s) = exp(- 0.5 * double sum) = Laplace Transform for density
+
+fsm5list = FsHDm5(1:10)
+fsm10list = FsHDm10(1:10)
+fsm20list = FsHDm20(1:10)
+
+
+#below finds the F(s)= f(s)/s i.e. the laplace transform for DF
+Fsm5 = function(s){
+  FsHDm5(s)/s
+}
+
+Fsm10 = function(s){
+  FsHDm10(s)/s
+}
+Fsm20 = function(s){
+  FsHDm20(s)/s
+}
+
+Fsm5list = Fsm5(1:10)
+Fsm10list = Fsm10(1:10)
+Fsm20list = Fsm20(1:10)
+
+m51020tab <- data.frame(dsm5list,dsm10list,dsm20list,fsm5list,fsm10list,fsm20list,Fsm5list,Fsm10list,Fsm20list)
+m51020tab %>%
+  rename(
+    "DS(s) m=5" = dsm5list,
+    "DS(s) m=10" = dsm10list,
+    "DS(s) m=20" = dsm20list,
+    "f(s) m=5" = fsm5list,
+    "f(s) m=10" = fsm10list,
+    "f(s) m=20" = fsm20list,
+    "F(s) m=5" = Fsm5list,
+    "F(s) m=10" = Fsm10list,
+    "F(s) m=20" = Fsm20list,
+  )
+
+```
+
+``` {r 30aug updates 818am email}
+
+#now we will increase the number of terms in double sum to i,j = m = 30
+
+dsm30 = function(s){
+  {DSP1 = log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 4*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 4*log(s/32 + 1) + 4*log(s/50 + 1) + 2*log((2*s)/49 + 1) + 6*log(s/72 + 1) + 3*log((2*s)/81 + 1) + 4*log(s/98 + 1) + 2*log((2*s)/121 + 1) + 5*log(s/128 + 1) + 6*log(s/162 + 1) + 2*log((2*s)/169 + 1) + 6*log(s/200 + 1) + 4*log((2*s)/225 + 1) + 4*log(s/242 + 1) + 8*log(s/288 + 1) + 2*log((2*s)/289 + 1) + 4*log(s/338 + 1) + 2*log((2*s)/361 + 1) + 6*log(s/392 + 1) + 4*log((2*s)/441 + 1) + 8*log(s/450 + 1) + 4*log(s/512 + 1) + 2*log((2*s)/529 + 1) + 2*log(s/578 + 1) + 3*log((2*s)/625 + 1) + 7*log(s/648 + 1) + 2*log(s/722 + 1) + 4*log((2*s)/729 + 1) + 6*log(s/800 + 1) + 2*log((2*s)/841 + 1) + 6*log(s/882 + 1) + 4*log(s/968 + 1) + 2*log(s/1058 + 1) + 2*log((2*s)/1089 + 1) + 8*log(s/1152 + 1) + 2*log((2*s)/1225 + 1) + 4*log(s/1250 + 1) + 4*log(s/1352 + 1) + 6*log(s/1458 + 1) + 2*log((2*s)/1521 + 1) + 6*log(s/1568 + 1) + 2*log(s/1682 + 1) + 10*log(s/1800 + 1) + 4*log((2*s)/2025 + 1) + 3*log(s/2048 + 1) + 4*log(s/2178 + 1) + 2*log(s/2312 + 1) + log((2*s)/2401 + 1) + 4*log(s/2450 + 1) + 8*log(s/2592 + 1) + 2*log((2*s)/2601 + 1) + 2*log(s/2888 + 1) + 2*log((2*s)/3025 + 1) + 4*log(s/3042 + 1) + 6*log(s/3200 + 1) + 2*log((2*s)/3249 + 1) + 8*log(s/3528 + 1) + 4*log(s/3872 + 1) + 4*log((2*s)/3969 + 1) + 8*log(s/4050 + 1) + 2*log((2*s)/4225 + 1) + 2*log(s/4232 + 1) + 6*log(s/4608 + 1) + 2*log((2*s)/4761 + 1) + 2*log(s/4802 + 1) + 5*log(s/5000 + 1) + 2*log(s/5202 + 1) + 4*log(s/5408 + 1) + 4*log((2*s)/5625 + 1) + 6*log(s/5832 + 1) + 2*log((2*s)/5929 + 1)}
+  {DSP2 =  4*log(s/6050 + 1) + 6*log(s/6272 + 1) + 2*log(s/6498 + 1) + 3*log((2*s)/6561 + 1) + 2*log(s/6728 + 1) + 10*log(s/7200 + 1) + 2*log((2*s)/7225 + 1) + 2*log((2*s)/7569 + 1) + 6*log(s/7938 + 1) + 2*log(s/8192 + 1) + 2*log((2*s)/8281 + 1) + 4*log(s/8450 + 1) + 4*log(s/8712 + 1) + 2*log((2*s)/9025 + 1) + 2*log(s/9248 + 1) + 2*log(s/9522 + 1) + 6*log(s/9800 + 1) + 2*log((2*s)/9801 + 1) + 7*log(s/10368 + 1) + 4*log((2*s)/11025 + 1) + 6*log(s/11250 + 1) + 2*log(s/11552 + 1) + 4*log(s/11858 + 1) + 4*log(s/12168 + 1) + 4*log(s/12800 + 1) + 4*log(s/13122 + 1) + 2*log((2*s)/13225 + 1) + 2*log((2*s)/13689 + 1) + 8*log(s/14112 + 1) + 2*log((2*s)/14161 + 1) + 2*log(s/14450 + 1) + log((2*s)/14641 + 1) + 2*log(s/15138 + 1) + 4*log(s/15488 + 1) + 2*log((2*s)/15625 + 1) + 8*log(s/16200 + 1) + 4*log(s/16562 + 1) + 2*log(s/16928 + 1) + 2*log((2*s)/17689 + 1) + 2*log(s/18050 + 1) + 4*log((2*s)/18225 + 1) + 4*log(s/18432 + 1) + 3*log(s/19208 + 1) + 4*log(s/19602 + 1) + 4*log(s/20000 + 1) + 2*log((2*s)/20449 + 1) + 2*log(s/20808 + 1) + 2*log((2*s)/21025 + 1) + 2*log((2*s)/21609 + 1) + 4*log(s/21632 + 1) + 6*log(s/22050 + 1) + 6*log(s/23328 + 1) + 2*log((2*s)/23409 + 1) + 4*log(s/24200 + 1) + 4*log(s/25088 + 1) + 2*log((2*s)/25921 + 1) + 2*log(s/25992 + 1) + 2*log(s/26450 + 1) + 2*log(s/26912 + 1) + 2*log((2*s)/27225 + 1) + 4*log(s/27378 + 1) + 2*log(s/28322 + 1) + log((2*s)/28561 + 1) + 8*log(s/28800 + 1) + 2*log((2*s)/29241 + 1) + 2*log(s/29282 + 1) + 2*log((2*s)/30625 + 1) + 2*log(s/31250 + 1) + 6*log(s/31752 + 1) + log(s/32768 + 1) + 4*log(s/33800 + 1) + 4*log(s/34848 + 1)}
+  {DSP3 =  2*log((2*s)/34969 + 1) + 2*log(s/35378 + 1) + 4*log((2*s)/35721 + 1) + 6*log(s/36450 + 1) + 2*log(s/36992 + 1) + 2*log((2*s)/38025 + 1) + 2*log(s/38088 + 1) + 4*log(s/39200 + 1) + 4*log(s/40898 + 1) + 2*log((2*s)/41209 + 1) + 4*log(s/41472 + 1) + 2*log(s/42050 + 1) + 2*log((2*s)/42849 + 1) + 2*log(s/43218 + 1) + 2*log((2*s)/43681 + 1) + 6*log(s/45000 + 1) + 2*log(s/46208 + 1) + 2*log(s/46818 + 1) + 4*log(s/47432 + 1) + 4*log(s/48672 + 1) + 2*log((2*s)/48841 + 1) + 3*log((2*s)/50625 + 1) + 2*log(s/51200 + 1) + 2*log(s/51842 + 1) + 3*log(s/52488 + 1) + 2*log((2*s)/53361 + 1) + 4*log(s/54450 + 1) + 6*log(s/56448 + 1) + 2*log(s/57122 + 1) + 2*log(s/57800 + 1) + 2*log(s/58482 + 1) + 2*log((2*s)/59049 + 1) + 2*log(s/60552 + 1) + 2*log((2*s)/61009 + 1) + 2*log(s/61250 + 1) + 2*log(s/61952 + 1) + 2*log((2*s)/64009 + 1) + 6*log(s/64800 + 1) + 2*log((2*s)/65025 + 1) + 4*log(s/66248 + 1) + 2*log(s/67712 + 1) + 2*log((2*s)/68121 + 1) + 2*log(s/69938 + 1) + 4*log(s/71442 + 1) + 2*log(s/72200 + 1) + 2*log(s/73728 + 1) + 2*log((2*s)/74529 + 1) + 2*log((2*s)/75625 + 1) + 4*log(s/76050 + 1) + 2*log(s/76832 + 1) + 2*log(s/78408 + 1) + 3*log(s/80000 + 1) + 2*log((2*s)/81225 + 1) + 2*log(s/82418 + 1) + 2*log(s/83232 + 1) + log((2*s)/83521 + 1) + 2*log(s/85698 + 1) + 2*log(s/86528 + 1) + 2*log(s/87362 + 1) + 6*log(s/88200 + 1) + 2*log((2*s)/88209 + 1) + 2*log((2*s)/89401 + 1) + 4*log(s/93312 + 1) + 2*log(s/96800 + 1) + 2*log(s/97682 + 1) + 2*log((2*s)/99225 + 1) + 2*log(s/100352 + 1) + 4*log(s/101250 + 1) + 2*log((2*s)/101761 + 1) + 2*log(s/103968 + 1) + 2*log((2*s)/104329 + 1)}
+  {DSP4 =  2*log((2*s)/105625 + 1) + 2*log(s/105800 + 1) + 2*log(s/106722 + 1) + 2*log(s/107648 + 1) + 2*log(s/109512 + 1) + 2*log(s/113288 + 1) + 4*log(s/115200 + 1) + log(s/117128 + 1) + 2*log(s/118098 + 1) + 2*log((2*s)/119025 + 1) + 2*log(s/122018 + 1) + 2*log((2*s)/123201 + 1) + 2*log(s/125000 + 1) + 4*log(s/127008 + 1) + 2*log((2*s)/127449 + 1) + 2*log(s/128018 + 1) + 2*log(s/130050 + 1) + log((2*s)/130321 + 1) + 2*log(s/135200 + 1) + 2*log(s/136242 + 1) + 2*log(s/139392 + 1) + 2*log((2*s)/140625 + 1) + 2*log(s/141512 + 1) + 2*log((2*s)/142129 + 1) + 4*log(s/145800 + 1) + 2*log(s/149058 + 1) + 2*log(s/151250 + 1) + 2*log(s/152352 + 1) + 2*log((2*s)/152881 + 1) + 2*log(s/156800 + 1) + 2*log((2*s)/159201 + 1) + 2*log(s/162450 + 1) + 2*log(s/163592 + 1) + 2*log((2*s)/164025 + 1) + log(s/165888 + 1) + 2*log(s/168200 + 1) + 2*log(s/172872 + 1) + 2*log(s/176418 + 1) + 2*log(s/178802 + 1) + 4*log(s/180000 + 1) + 2*log((2*s)/180625 + 1) + 2*log((2*s)/189225 + 1) + 2*log(s/189728 + 1) + 2*log((2*s)/190969 + 1) + log((2*s)/194481 + 1) + 2*log(s/194688 + 1) + 2*log(s/198450 + 1) + 2*log(s/203522 + 1) + 2*log(s/207368 + 1) + 2*log(s/209952 + 1) + 2*log((2*s)/210681 + 1) + 2*log(s/211250 + 1) + 2*log(s/217800 + 1) + 2*log((2*s)/225625 + 1) + 2*log(s/225792 + 1) + log(s/228488 + 1) + 2*log((2*s)/233289 + 1) + 2*log(s/238050 + 1) + 2*log(s/242208 + 1) + 2*log((2*s)/243049 + 1) + 2*log(s/245000 + 1) + 2*log(s/246402 + 1) + 2*log(s/259200 + 1) + 2*log((2*s)/263169 + 1) + 2*log(s/264992 + 1) + 2*log((2*s)/275625 + 1) + log((2*s)/279841 + 1) + 2*log(s/281250 + 1) + 2*log(s/284258 + 1)}
+  {DSP5 =  2*log(s/285768 + 1) + 2*log((2*s)/303601 + 1) + 2*log(s/304200 + 1) + log(s/307328 + 1) + 2*log((2*s)/321489 + 1) + 2*log(s/328050 + 1) + 2*log(s/329672 + 1) + 2*log((2*s)/330625 + 1) + 2*log(s/352800 + 1) + 2*log((2*s)/370881 + 1) + 2*log(s/378450 + 1) + 2*log((2*s)/385641 + 1) + log((2*s)/390625 + 1) + log(s/405000 + 1) + 2*log((2*s)/444889 + 1) + 2*log((2*s)/455625 + 1) + 2*log((2*s)/525625 + 1) + log((2*s)/531441 + 1) + 2*log((2*s)/613089 + 1) + log((2*s)/707281 + 1)}
+      return(DSP1 + DSP2 + DSP3 + DSP4 + DSP5)                        
+}
+
+
+dsm30(10)
+
+#below is the code for DS(s) = double sum of….(truncation of j1, j2 after m terms) evaluated from s = 1:20
+
+dsm30list = dsm30(1:20)
+
+#below is the code for f(s) = exp(- 0.5 * double sum) = Laplace Transform for density
+
+FsHDm30 = function(s){
+  exp(-0.5 * dsm30(s))
+}
+
+
+fsm30list = FsHDm30(1:20)
+
+
+#below finds the F(s)= f(s)/s i.e. the laplace transform for DF
+
+Fsm30 = function(s){
+  FsHDm30(s)/s
+}
+
+Fsm30list = Fsm30(1:20)
+
+
+m51020tab <- data.frame(dsm30list,fsm30list,Fsm30list)
+m51020tab %>%
+  rename(
+    "DS(s) m=30" = dsm30list,
+    "f(s) m=30" = fsm30list,
+    "F(s) m=30" = Fsm30list,
+  )
+
+
+#code for ckn
+ckn <- function(n,k){
+  CKN = (-1)^(n+k) * (k^n / (factorial(k)*factorial(n-k)))
+  return(CKN)
+}
+
+
+#below is the code to find fkt in the gaver=stehfest method, evaluated using the double summation truncated at m=20
+HDfkt = function(k,t){
+  FKTp1 = (log(2)/t) 
+  FKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  FKTp3 = 0
+  for(i in 0:k){
+    fktp3summ = (choose(k,i))*((-1)^i)*(FsHDm30(((k+i)*log(2))/t))
+    FKTp3 = FKTp3 + fktp3summ
+  }
+ FKT = FKTp1 * FKTp2 * FKTp3
+ FKT
+}
+
+#below is the code that finds fnt in the gaver-stehfest method
+
+HDfnt <- function(n,t){
+  FNT = 0
+  mckn <- c()
+  mfhat <- c()
+  for(i in 1:n){
+    summ = ckn(n,i) * HDfkt(i,t)
+    FNT = FNT + summ
+  }
+  return(FNT)
+}
+
+ #this function creates a vector of fnt estimate evaluated at specifed n, for t from 1 to 20
+HDFntlist = function(n){
+FNTlist <- c()
+for (i in seq(1, 20)) {
+  new_value = HDfnt(n,i)
+  FNTlist <- c(FNTlist, new_value)
+  }
+  FNTlist
+}
+
+HDF5t <- HDFntlist(5)
+HDF6t <- HDFntlist(6)
+HDF7t <- HDFntlist(7)
+HDF8t <- HDFntlist(8)
+HDF9t <- HDFntlist(9)
+HDF10t <- HDFntlist(10)
+HDF11t <- HDFntlist(11)
+HDF12t <- HDFntlist(12)
+HDF13t <- HDFntlist(13)
+HDF14t <- HDFntlist(14)
+HDF15t <- HDFntlist(15)
+
+
+t<- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
+HDpdfgavertable <- data.frame(t,HDF5t,HDF6t,HDF7t,HDF8t,HDF9t,HDF10t,HDF11t,HDF12t,HDF13t, HDF14t,HDF15t)
+HDpdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; fn(t) for n=5" = HDF5t,
+    "Gaver-Stehfest Approx; fn(t) for n=6" = HDF6t,
+    "Gaver-Stehfest Approx; fn(t) for n=7" = HDF7t,
+    "Gaver-Stehfest Approx; fn(t) for n=8" = HDF8t,
+    "Gaver-Stehfest Approx; fn(t) for n=9" = HDF9t,
+    "Gaver-Stehfest Approx; fn(t) for n=10" = HDF10t,
+    "Gaver-Stehfest Approx; fn(t) for n=11" = HDF11t,
+    "Gaver-Stehfest Approx; fn(t) for n=12" = HDF12t,
+    "Gaver-Stehfest Approx; fn(t) for n=13" = HDF13t,
+    "Gaver-Stehfest Approx; fn(t) for n=14" = HDF14t,
+    "Gaver-Stehfest Approx; fn(t) for n=15" = HDF15t
+  )
+
+######################################################
+######################################################
+######################################################
+######################################################
+###### NOW for DF (LT divided by s)##################
+######################################################
+######################################################
+######################################################
+######################################################
+
+
+HDDFfkt = function(k,t) { 
+  DFFKTp1 = (log(2)/t) 
+  DFFKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  DFFKTp3 = 0
+  for(i in 0:k){
+    DFfktp3summ = (choose(k,i))*((-1)^i)* ( (FsHDm30(((k+i)*log(2)) / t)) / ((k+i)*log(2)) / t) 
+    DFFKTp3 = DFFKTp3 + DFfktp3summ
+  }
+ DFFKT = DFFKTp1 * DFFKTp2 * DFFKTp3
+ DFFKT
+}
+
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+HDDFfnt <- function(n,t){
+  HDDFFNT = 0
+  for(i in 1:n){
+    HDDFsumm = ckn(n,i) * HDDFfkt(i,t)
+    HDDFFNT = HDDFFNT + HDDFsumm
+  }
+  return(HDDFFNT)
+}
+
+
+
+
+HDDFFntlist = function(n){
+HDDFFNTlist <- c()
+for (i in seq(10,22)) {
+  DFnew_value = HDDFfnt(n,i)
+  HDDFFNTlist <- c(HDDFFNTlist, DFnew_value)
+  }
+  HDDFFNTlist
+}
+#above function repeats 
+HDDFF2t <- HDDFFntlist(2)
+
+
+HDDFF5t <- HDDFFntlist(5)
+HDDFF6t <- HDDFFntlist(6)
+HDDFF7t <- HDDFFntlist(7)
+HDDFF8t <- HDDFFntlist(8)
+HDDFF9t <- HDDFFntlist(9)
+HDDFF10t <- HDDFFntlist(10)
+HDDFF11t <- HDDFFntlist(11)
+HDDFF12t <- HDDFFntlist(12)
+HDDFF13t <- HDDFFntlist(13)
+HDDFF14t <- HDDFFntlist(14)
+HDDFF15t <- HDDFFntlist(15)
+t10to20 <- c(seq(10,22))
+t <- c(10:22)
+ktable1BKR = 0.5*t10to20
+OneminusDF9t = 1 - HDDFFntlist(9)
+
+oneminusDF9ttable <- data.frame(t10to20,ktable1BKR,OneminusDF9t)
+oneminusDF9ttable  %>%
+  rename(
+    "t" = t10to20,
+    "k from table 1 BKR = 1/2 t" = ktable1BKR,
+    "1-DFn estimate using m=30 and D = 9"= OneminusDF9t
+  )
+
+OMHDDFF5t = 1-HDDFFntlist(5)
+OMHDDFF6t = 1-HDDFFntlist(6)
+OMHDDFF7t = 1-HDDFFntlist(7)
+OMHDDFF8t = 1-HDDFFntlist(8)
+OMHDDFF9t = 1-HDDFFntlist(9)
+OMHDDFF10t = 1-HDDFFntlist(10)
+OMHDDFF11t = 1-HDDFFntlist(11)
+OMHDDFF12t = 1-HDDFFntlist(12)
+OMHDDFF13t = 1-HDDFFntlist(13)
+OMHDDFF14t = 1-HDDFFntlist(14)
+OMHDDFF15t = 1-HDDFFntlist(15)
+
+HDdfgavertable <- data.frame(t,OMHDDFF5t,OMHDDFF6t,OMHDDFF7t,OMHDDFF8t,OMHDDFF9t,OMHDDFF10t,OMHDDFF11t,OMHDDFF12t,OMHDDFF13t,OMHDDFF14t,OMHDDFF15t)
+HDdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; DFn(t) for n=5" = OMHDDFF5t,
+    "Gaver-Stehfest Approx; DFn(t) for n=6" = OMHDDFF6t,
+    "Gaver-Stehfest Approx; DFn(t) for n=7" = OMHDDFF7t,
+    "Gaver-Stehfest Approx; DFn(t) for n=8" = OMHDDFF8t,
+    "Gaver-Stehfest Approx; DFn(t) for n=9" = OMHDDFF9t,
+    "Gaver-Stehfest Approx; DFn(t) for n=10" = OMHDDFF10t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=11" = OMHDDFF11t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=12" = OMHDDFF12t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=13" = OMHDDFF13t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=14" = OMHDDFF14t,
+    "Gaver-Stehfest Approx; Dfn(t) for n=15" = OMHDDFF15t
+  )
+
+
 
 ```
 
 
 
+``` {r 1sep 753am email reply}
+
+#now we will increase the number of terms in double sum to i,j = m = 30
+#new update to this we will add R(s) to the double sum at m=30 where R(s) = (2s)*((((pi^2)/6)^2) - T)
+
+Tsum = function(m){
+  tcounter = 0
+  for(i in 1:m){
+    ti = (1/i^2)
+    tcounter = tcounter+ti
+  }
+  return(tcounter)
+}
+
+Tsum(30)
+#1.612150117601597543171
+
+
+#testing new dsm general function
+dsmgeneral = function(s,m){
+  dsmncount = 0
+  for(i in 1:m){
+    for(j in 1:m){
+      dsmnewval = log((1 + 2*s)/((i^2)*(j^2))) 
+      dsmncount = dsmncount + dsmnewval
+    }
+  }
+  return(dsmncount)
+}
+
+dsmgeneral(10,30)
+#-6218.918167908536815958
+dsm30(10)
+#25.80602016940212095619
+
+
+DSm30plusRs = function(s){
+  {DSP1 = log(2*s + 1) + 2*log(s/2 + 1) + 3*log(s/8 + 1) + 2*log((2*s)/9 + 1) + 4*log(s/18 + 1) + 2*log((2*s)/25 + 1) + 4*log(s/32 + 1) + 4*log(s/50 + 1) + 2*log((2*s)/49 + 1) + 6*log(s/72 + 1) + 3*log((2*s)/81 + 1) + 4*log(s/98 + 1) + 2*log((2*s)/121 + 1) + 5*log(s/128 + 1) + 6*log(s/162 + 1) + 2*log((2*s)/169 + 1) + 6*log(s/200 + 1) + 4*log((2*s)/225 + 1) + 4*log(s/242 + 1) + 8*log(s/288 + 1) + 2*log((2*s)/289 + 1) + 4*log(s/338 + 1) + 2*log((2*s)/361 + 1) + 6*log(s/392 + 1) + 4*log((2*s)/441 + 1) + 8*log(s/450 + 1) + 4*log(s/512 + 1) + 2*log((2*s)/529 + 1) + 2*log(s/578 + 1) + 3*log((2*s)/625 + 1) + 7*log(s/648 + 1) + 2*log(s/722 + 1) + 4*log((2*s)/729 + 1) + 6*log(s/800 + 1) + 2*log((2*s)/841 + 1) + 6*log(s/882 + 1) + 4*log(s/968 + 1) + 2*log(s/1058 + 1) + 2*log((2*s)/1089 + 1) + 8*log(s/1152 + 1) + 2*log((2*s)/1225 + 1) + 4*log(s/1250 + 1) + 4*log(s/1352 + 1) + 6*log(s/1458 + 1) + 2*log((2*s)/1521 + 1) + 6*log(s/1568 + 1) + 2*log(s/1682 + 1) + 10*log(s/1800 + 1) + 4*log((2*s)/2025 + 1) + 3*log(s/2048 + 1) + 4*log(s/2178 + 1) + 2*log(s/2312 + 1) + log((2*s)/2401 + 1) + 4*log(s/2450 + 1) + 8*log(s/2592 + 1) + 2*log((2*s)/2601 + 1) + 2*log(s/2888 + 1) + 2*log((2*s)/3025 + 1) + 4*log(s/3042 + 1) + 6*log(s/3200 + 1) + 2*log((2*s)/3249 + 1) + 8*log(s/3528 + 1) + 4*log(s/3872 + 1) + 4*log((2*s)/3969 + 1) + 8*log(s/4050 + 1) + 2*log((2*s)/4225 + 1) + 2*log(s/4232 + 1) + 6*log(s/4608 + 1) + 2*log((2*s)/4761 + 1) + 2*log(s/4802 + 1) + 5*log(s/5000 + 1) + 2*log(s/5202 + 1) + 4*log(s/5408 + 1) + 4*log((2*s)/5625 + 1) + 6*log(s/5832 + 1) + 2*log((2*s)/5929 + 1)}
+  {DSP2 =  4*log(s/6050 + 1) + 6*log(s/6272 + 1) + 2*log(s/6498 + 1) + 3*log((2*s)/6561 + 1) + 2*log(s/6728 + 1) + 10*log(s/7200 + 1) + 2*log((2*s)/7225 + 1) + 2*log((2*s)/7569 + 1) + 6*log(s/7938 + 1) + 2*log(s/8192 + 1) + 2*log((2*s)/8281 + 1) + 4*log(s/8450 + 1) + 4*log(s/8712 + 1) + 2*log((2*s)/9025 + 1) + 2*log(s/9248 + 1) + 2*log(s/9522 + 1) + 6*log(s/9800 + 1) + 2*log((2*s)/9801 + 1) + 7*log(s/10368 + 1) + 4*log((2*s)/11025 + 1) + 6*log(s/11250 + 1) + 2*log(s/11552 + 1) + 4*log(s/11858 + 1) + 4*log(s/12168 + 1) + 4*log(s/12800 + 1) + 4*log(s/13122 + 1) + 2*log((2*s)/13225 + 1) + 2*log((2*s)/13689 + 1) + 8*log(s/14112 + 1) + 2*log((2*s)/14161 + 1) + 2*log(s/14450 + 1) + log((2*s)/14641 + 1) + 2*log(s/15138 + 1) + 4*log(s/15488 + 1) + 2*log((2*s)/15625 + 1) + 8*log(s/16200 + 1) + 4*log(s/16562 + 1) + 2*log(s/16928 + 1) + 2*log((2*s)/17689 + 1) + 2*log(s/18050 + 1) + 4*log((2*s)/18225 + 1) + 4*log(s/18432 + 1) + 3*log(s/19208 + 1) + 4*log(s/19602 + 1) + 4*log(s/20000 + 1) + 2*log((2*s)/20449 + 1) + 2*log(s/20808 + 1) + 2*log((2*s)/21025 + 1) + 2*log((2*s)/21609 + 1) + 4*log(s/21632 + 1) + 6*log(s/22050 + 1) + 6*log(s/23328 + 1) + 2*log((2*s)/23409 + 1) + 4*log(s/24200 + 1) + 4*log(s/25088 + 1) + 2*log((2*s)/25921 + 1) + 2*log(s/25992 + 1) + 2*log(s/26450 + 1) + 2*log(s/26912 + 1) + 2*log((2*s)/27225 + 1) + 4*log(s/27378 + 1) + 2*log(s/28322 + 1) + log((2*s)/28561 + 1) + 8*log(s/28800 + 1) + 2*log((2*s)/29241 + 1) + 2*log(s/29282 + 1) + 2*log((2*s)/30625 + 1) + 2*log(s/31250 + 1) + 6*log(s/31752 + 1) + log(s/32768 + 1) + 4*log(s/33800 + 1) + 4*log(s/34848 + 1)}
+  {DSP3 =  2*log((2*s)/34969 + 1) + 2*log(s/35378 + 1) + 4*log((2*s)/35721 + 1) + 6*log(s/36450 + 1) + 2*log(s/36992 + 1) + 2*log((2*s)/38025 + 1) + 2*log(s/38088 + 1) + 4*log(s/39200 + 1) + 4*log(s/40898 + 1) + 2*log((2*s)/41209 + 1) + 4*log(s/41472 + 1) + 2*log(s/42050 + 1) + 2*log((2*s)/42849 + 1) + 2*log(s/43218 + 1) + 2*log((2*s)/43681 + 1) + 6*log(s/45000 + 1) + 2*log(s/46208 + 1) + 2*log(s/46818 + 1) + 4*log(s/47432 + 1) + 4*log(s/48672 + 1) + 2*log((2*s)/48841 + 1) + 3*log((2*s)/50625 + 1) + 2*log(s/51200 + 1) + 2*log(s/51842 + 1) + 3*log(s/52488 + 1) + 2*log((2*s)/53361 + 1) + 4*log(s/54450 + 1) + 6*log(s/56448 + 1) + 2*log(s/57122 + 1) + 2*log(s/57800 + 1) + 2*log(s/58482 + 1) + 2*log((2*s)/59049 + 1) + 2*log(s/60552 + 1) + 2*log((2*s)/61009 + 1) + 2*log(s/61250 + 1) + 2*log(s/61952 + 1) + 2*log((2*s)/64009 + 1) + 6*log(s/64800 + 1) + 2*log((2*s)/65025 + 1) + 4*log(s/66248 + 1) + 2*log(s/67712 + 1) + 2*log((2*s)/68121 + 1) + 2*log(s/69938 + 1) + 4*log(s/71442 + 1) + 2*log(s/72200 + 1) + 2*log(s/73728 + 1) + 2*log((2*s)/74529 + 1) + 2*log((2*s)/75625 + 1) + 4*log(s/76050 + 1) + 2*log(s/76832 + 1) + 2*log(s/78408 + 1) + 3*log(s/80000 + 1) + 2*log((2*s)/81225 + 1) + 2*log(s/82418 + 1) + 2*log(s/83232 + 1) + log((2*s)/83521 + 1) + 2*log(s/85698 + 1) + 2*log(s/86528 + 1) + 2*log(s/87362 + 1) + 6*log(s/88200 + 1) + 2*log((2*s)/88209 + 1) + 2*log((2*s)/89401 + 1) + 4*log(s/93312 + 1) + 2*log(s/96800 + 1) + 2*log(s/97682 + 1) + 2*log((2*s)/99225 + 1) + 2*log(s/100352 + 1) + 4*log(s/101250 + 1) + 2*log((2*s)/101761 + 1) + 2*log(s/103968 + 1) + 2*log((2*s)/104329 + 1)}
+  {DSP4 =  2*log((2*s)/105625 + 1) + 2*log(s/105800 + 1) + 2*log(s/106722 + 1) + 2*log(s/107648 + 1) + 2*log(s/109512 + 1) + 2*log(s/113288 + 1) + 4*log(s/115200 + 1) + log(s/117128 + 1) + 2*log(s/118098 + 1) + 2*log((2*s)/119025 + 1) + 2*log(s/122018 + 1) + 2*log((2*s)/123201 + 1) + 2*log(s/125000 + 1) + 4*log(s/127008 + 1) + 2*log((2*s)/127449 + 1) + 2*log(s/128018 + 1) + 2*log(s/130050 + 1) + log((2*s)/130321 + 1) + 2*log(s/135200 + 1) + 2*log(s/136242 + 1) + 2*log(s/139392 + 1) + 2*log((2*s)/140625 + 1) + 2*log(s/141512 + 1) + 2*log((2*s)/142129 + 1) + 4*log(s/145800 + 1) + 2*log(s/149058 + 1) + 2*log(s/151250 + 1) + 2*log(s/152352 + 1) + 2*log((2*s)/152881 + 1) + 2*log(s/156800 + 1) + 2*log((2*s)/159201 + 1) + 2*log(s/162450 + 1) + 2*log(s/163592 + 1) + 2*log((2*s)/164025 + 1) + log(s/165888 + 1) + 2*log(s/168200 + 1) + 2*log(s/172872 + 1) + 2*log(s/176418 + 1) + 2*log(s/178802 + 1) + 4*log(s/180000 + 1) + 2*log((2*s)/180625 + 1) + 2*log((2*s)/189225 + 1) + 2*log(s/189728 + 1) + 2*log((2*s)/190969 + 1) + log((2*s)/194481 + 1) + 2*log(s/194688 + 1) + 2*log(s/198450 + 1) + 2*log(s/203522 + 1) + 2*log(s/207368 + 1) + 2*log(s/209952 + 1) + 2*log((2*s)/210681 + 1) + 2*log(s/211250 + 1) + 2*log(s/217800 + 1) + 2*log((2*s)/225625 + 1) + 2*log(s/225792 + 1) + log(s/228488 + 1) + 2*log((2*s)/233289 + 1) + 2*log(s/238050 + 1) + 2*log(s/242208 + 1) + 2*log((2*s)/243049 + 1) + 2*log(s/245000 + 1) + 2*log(s/246402 + 1) + 2*log(s/259200 + 1) + 2*log((2*s)/263169 + 1) + 2*log(s/264992 + 1) + 2*log((2*s)/275625 + 1) + log((2*s)/279841 + 1) + 2*log(s/281250 + 1) + 2*log(s/284258 + 1)}
+  {DSP5 =  2*log(s/285768 + 1) + 2*log((2*s)/303601 + 1) + 2*log(s/304200 + 1) + log(s/307328 + 1) + 2*log((2*s)/321489 + 1) + 2*log(s/328050 + 1) + 2*log(s/329672 + 1) + 2*log((2*s)/330625 + 1) + 2*log(s/352800 + 1) + 2*log((2*s)/370881 + 1) + 2*log(s/378450 + 1) + 2*log((2*s)/385641 + 1) + log((2*s)/390625 + 1) + log(s/405000 + 1) + 2*log((2*s)/444889 + 1) + 2*log((2*s)/455625 + 1) + 2*log((2*s)/525625 + 1) + log((2*s)/531441 + 1) + 2*log((2*s)/613089 + 1) + log((2*s)/707281 + 1)}
+  {Rs = ((2*s) * ((((pi^2)/6)^2) - (Tsum(30))^2)) }
+      return(DSP1 + DSP2 + DSP3 + DSP4 + DSP5 + Rs )                   
+}
+
+((2*5) * (((pi^2)/6)^2 - Tsum(30))) 
+  
+DSm30plusRs(5)
+#Tsum30 = 1.612150117601597543171
+#Rs = 10.93657966676247816906
+#14.31881745283347484587 without Tsum30
+#25.25539711959595479129 with Tsum 30
+
+#below is the code for DS(s) = double sum of….(truncation of j1, j2 after m terms) evaluated from s = 1:20
+
+dsmrs30list = DSm30plusRs(1:20)
+
+#below is the code for f(s) = exp(- 0.5 * double sum) = Laplace Transform for density
+
+FsHDm30 = function(s){
+  exp(-0.5 * DSm30plusRs(s))
+}
+
+
+fsm30list = FsHDm30(1:20)
+
+
+#below finds the F(s)= f(s)/s i.e. the laplace transform for DF
+
+Fsm30 = function(s){
+  FsHDm30(s)/s
+}
+
+Fsm30list = Fsm30(1:20)
+
+
+m51020tab <- data.frame(dsmrs30list,fsm30list,Fsm30list)
+m51020tab %>%
+  rename(
+    "DS(s) + R(s) using m=30" = dsmrs30list,
+    "f(s) using m=30" = fsm30list,
+    "F(s) using m=30" = Fsm30list,
+  )
+
+
+#code for ckn
+ckn <- function(n,k){
+  CKN = (-1)^(n+k) * (k^n / (factorial(k)*factorial(n-k)))
+  return(CKN)
+}
+
+
+#below is the code to find fkt in the gaver=stehfest method, evaluated using the double summation truncated at m=20
+
+HDfkt = function(k,t){
+  FKTp1 = (log(2)/t) 
+  FKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  FKTp3 = 0
+  for(i in 0:k){
+    fktp3summ = (choose(k,i))*((-1)^i)*(FsHDm30(((k+i)*log(2))/t))
+    FKTp3 = FKTp3 + fktp3summ
+  }
+ FKT = FKTp1 * FKTp2 * FKTp3
+ FKT
+}
+
+#below is the code that finds fnt in the gaver-stehfest method
+
+HDfnt <- function(n,t){
+  FNT = 0
+  mckn <- c()
+  mfhat <- c()
+  for(i in 1:n){
+    summ = ckn(n,i) * HDfkt(i,t)
+    FNT = FNT + summ
+  }
+  return(FNT)
+}
+
+ #this function creates a vector of fnt estimate evaluated at specifed n, for t from 1 to 20
+HDFntlist = function(n){
+FNTlist <- c()
+for (i in seq(1, 20)) {
+  new_value = HDfnt(n,i)
+  FNTlist <- c(FNTlist, new_value)
+  }
+  FNTlist
+}
+
+HDF5t <- HDFntlist(5)
+HDF6t <- HDFntlist(6)
+HDF7t <- HDFntlist(7)
+HDF8t <- HDFntlist(8)
+HDF9t <- HDFntlist(9)
+HDF10t <- HDFntlist(10)
+HDF11t <- HDFntlist(11)
+HDF12t <- HDFntlist(12)
+HDF13t <- HDFntlist(13)
+HDF14t <- HDFntlist(14)
+HDF15t <- HDFntlist(15)
+
+
+t<- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
+HDpdfgavertable <- data.frame(t,HDF5t,HDF6t,HDF7t,HDF8t,HDF9t,HDF10t,HDF11t,HDF12t,HDF13t, HDF14t,HDF15t)
+HDpdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; fn(t) for n=5" = HDF5t,
+    "Gaver-Stehfest Approx; fn(t) for n=6" = HDF6t,
+    "Gaver-Stehfest Approx; fn(t) for n=7" = HDF7t,
+    "Gaver-Stehfest Approx; fn(t) for n=8" = HDF8t,
+    "Gaver-Stehfest Approx; fn(t) for n=9" = HDF9t,
+    "Gaver-Stehfest Approx; fn(t) for n=10" = HDF10t,
+    "Gaver-Stehfest Approx; fn(t) for n=11" = HDF11t,
+    "Gaver-Stehfest Approx; fn(t) for n=12" = HDF12t,
+    "Gaver-Stehfest Approx; fn(t) for n=13" = HDF13t,
+    "Gaver-Stehfest Approx; fn(t) for n=14" = HDF14t,
+    "Gaver-Stehfest Approx; fn(t) for n=15" = HDF15t
+  )
+
+######################################################
+######################################################
+######################################################
+######################################################
+###### NOW for DF (LT divided by s)##################
+######################################################
+######################################################
+######################################################
+######################################################
+
+
+HDDFfkt = function(k,t) { 
+  DFFKTp1 = (log(2)/t) 
+  DFFKTp2 = (factorial(2*k)/(factorial(k)*factorial(k-1))) 
+  DFFKTp3 = 0
+  for(i in 0:k){
+    DFfktp3summ = (choose(k,i))*((-1)^i)* ( (FsHDm30(((k+i)*log(2)) / t)) / ((k+i)*log(2)) / t) 
+    DFFKTp3 = DFFKTp3 + DFfktp3summ
+  }
+ DFFKT = DFFKTp1 * DFFKTp2 * DFFKTp3
+ DFFKT
+}
+
+
+
+#function for estimation given n and t, k is left out as the incrememnts in the for loop represent each k
+HDDFfnt <- function(n,t){
+  HDDFFNT = 0
+  for(i in 1:n){
+    HDDFsumm = ckn(n,i) * HDDFfkt(i,t)
+    HDDFFNT = HDDFFNT + HDDFsumm
+  }
+  return(HDDFFNT)
+}
+
+
+
+
+HDDFFntlist = function(n){
+HDDFFNTlist <- c()
+for (i in seq(10,22)) {
+  DFnew_value = HDDFfnt(n,i)
+  HDDFFNTlist <- c(HDDFFNTlist, DFnew_value)
+  }
+  HDDFFNTlist
+}
+#above function repeats 
+HDDFF2t <- HDDFFntlist(2)
+
+
+HDDFF5t <- HDDFFntlist(5)
+HDDFF6t <- HDDFFntlist(6)
+HDDFF7t <- HDDFFntlist(7)
+HDDFF8t <- HDDFFntlist(8)
+HDDFF9t <- HDDFFntlist(9)
+HDDFF10t <- HDDFFntlist(10)
+HDDFF11t <- HDDFFntlist(11)
+HDDFF12t <- HDDFFntlist(12)
+HDDFF13t <- HDDFFntlist(13)
+HDDFF14t <- HDDFFntlist(14)
+HDDFF15t <- HDDFFntlist(15)
+
+t <- c(10:22)
+HDdfgavertable <- data.frame(t,HDDFF5t,HDDFF6t,HDDFF7t,HDDFF8t,HDDFF9t,HDDFF10t,HDDFF11t,HDDFF12t,HDDFF13t,HDDFF14t,HDDFF15t)
+HDdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; 1 -  DFn(t) for n=5" = HDDFF5t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=6" = HDDFF6t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=7" = HDDFF7t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=8" = HDDFF8t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=9" = HDDFF9t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=10" = HDDFF10t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=11" = HDDFF11t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=12" = HDDFF12t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=13" = HDDFF13t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=14" = HDDFF14t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=15" = HDDFF15t
+  )
+
+
+t10to20 <- c(seq(10,22))
+t <- c(10:22)
+ktable1BKR = 0.5*t10to20
+OneminusDF9t = 1 - HDDFFntlist(9)
+
+oneminusDF9ttable <- data.frame(t10to20,ktable1BKR,OneminusDF9t)
+oneminusDF9ttable  %>%
+  rename(
+    "t" = t10to20,
+    "k from table 1 BKR = 1/2 t" = ktable1BKR,
+    "1-DFn estimate using m=30 and D = 9"= OneminusDF9t
+  )
+
+
+
+OMHDDFF5t = 1-HDDFFntlist(5)
+OMHDDFF6t = 1-HDDFFntlist(6)
+OMHDDFF7t = 1-HDDFFntlist(7)
+OMHDDFF8t = 1-HDDFFntlist(8)
+OMHDDFF9t = 1-HDDFFntlist(9)
+OMHDDFF10t = 1-HDDFFntlist(10)
+OMHDDFF11t = 1-HDDFFntlist(11)
+OMHDDFF12t = 1-HDDFFntlist(12)
+OMHDDFF13t = 1-HDDFFntlist(13)
+OMHDDFF14t = 1-HDDFFntlist(14)
+OMHDDFF15t = 1-HDDFFntlist(15)
+
+OMHDdfgavertable <- data.frame(t,OMHDDFF5t,OMHDDFF6t,OMHDDFF7t,OMHDDFF8t,OMHDDFF9t,OMHDDFF10t,OMHDDFF11t,OMHDDFF12t,OMHDDFF13t,OMHDDFF14t,OMHDDFF15t)
+OMHDdfgavertable  %>%
+  rename(
+    "Gaver-Stehfest Approx; 1 -  DFn(t) for n=5" = OMHDDFF5t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=6" = OMHDDFF6t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=7" = OMHDDFF7t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=8" = OMHDDFF8t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=9" = OMHDDFF9t,
+    "Gaver-Stehfest Approx; 1 - DFn(t) for n=10" = OMHDDFF10t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=11" = OMHDDFF11t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=12" = OMHDDFF12t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=13" = OMHDDFF13t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=14" = OMHDDFF14t,
+    "Gaver-Stehfest Approx; 1 - Dfn(t) for n=15" = OMHDDFF15t
+  )
+
+
+
+```
+
+
+## References 
+[1] 
+Hoeffding, W. (1948b). A non-parametric test of in- dependence. The annals of mathematical statistics, pages 546–557.
+
+[2] Blum, J. R., Kiefer, J. C., and Rosenblatt, M. (1961). Distribution free tests of independence based on the sample distribution function. The Annals of Math- ematical Statistics, pages 485–49
+
+[3] H. HOTELLING AND M. R. PABST, "Rank correlation and tests of significance involving no assumptions of normality," Annals of Math. Stat., Vol. 7 (1936), pp. 29-43.
+
+[4] M. G. KENDALL, "A new measure of rank correlation," Biometrika, Vol. 30 (1938), pp. 81-93.
+
+
+[5] W. HOEFFDING, "A class of statistics with asymptotically normal distribution," Annals of Math. Stat., Vol. 19 (1948), pp. 293-325
